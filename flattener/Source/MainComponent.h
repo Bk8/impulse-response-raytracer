@@ -30,11 +30,15 @@ public:
     enum CommandIDs
     {
         openTrace = 0x2000,
-        flatten
+        flatten,
+        openSettings,
+        saveSettings,
     };
 private:
     void doOpenTrace();
     void doFlatten();
+    void doOpenSettings();
+    void doSaveSettings();
     
     std::vector<RayTrace> raytrace;
         

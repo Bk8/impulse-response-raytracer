@@ -16,6 +16,7 @@
 		1B5A7423189C4AC4006AA760 /* SpeakerListBoxModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5A741A189C4AC4006AA760 /* SpeakerListBoxModel.cpp */; };
 		1B5A7424189C4AC4006AA760 /* WriteThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5A741C189C4AC4006AA760 /* WriteThread.cpp */; };
 		1B5A7426189C4AF6006AA760 /* ThreadWithCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5A7425189C4AF6006AA760 /* ThreadWithCallbacks.cpp */; };
+		1B5A744C189D0F10006AA760 /* blumlein.json in Resources */ = {isa = PBXBuildFile; fileRef = 1B5A744B189D0F10006AA760 /* blumlein.json */; };
 		1BF6BC6F189C4A24005C0579 /* libverb.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BF6BC6C189C49EB005C0579 /* libverb.a */; };
 		2941456478E797D81554812B /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 703A89899E179F03C13F7C2C /* CoreMIDI.framework */; };
 		298DCCABFCE9026794B56F75 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F16BC2EEC0B421722FEEB368 /* IOKit.framework */; };
@@ -172,6 +173,7 @@
 		1B5A741C189C4AC4006AA760 /* WriteThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WriteThread.cpp; path = ../../Source/WriteThread.cpp; sourceTree = "<group>"; };
 		1B5A741D189C4AC4006AA760 /* WriteThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WriteThread.h; path = ../../Source/WriteThread.h; sourceTree = "<group>"; };
 		1B5A7425189C4AF6006AA760 /* ThreadWithCallbacks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadWithCallbacks.cpp; path = ../../../include/ThreadWithCallbacks.cpp; sourceTree = "<group>"; };
+		1B5A744B189D0F10006AA760 /* blumlein.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = blumlein.json; sourceTree = "<group>"; };
 		1B8B5767EED68AADAB094162 /* juce_StringArray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_StringArray.cpp; path = ../../../../JUCE/modules/juce_core/text/juce_StringArray.cpp; sourceTree = SOURCE_ROOT; };
 		1B8FFE198F9F9E0D3B46D94D /* juce_ImageCache.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_ImageCache.cpp; path = ../../../../JUCE/modules/juce_graphics/images/juce_ImageCache.cpp; sourceTree = SOURCE_ROOT; };
 		1BE8926119EAFCC54E1671D7 /* juce_FileInputStream.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_FileInputStream.cpp; path = ../../../../JUCE/modules/juce_core/files/juce_FileInputStream.cpp; sourceTree = SOURCE_ROOT; };
@@ -2525,6 +2527,7 @@
 		E888A304E9CCE7968F791E9A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1B5A744B189D0F10006AA760 /* blumlein.json */,
 				3C54311EA414540A1895E28C /* Info.plist */,
 				E33915CEA3B2F5F08163F4AA /* RecentFilesMenuTemplate.nib */,
 			);
@@ -2733,6 +2736,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				588DC2E7258C187F2A42F337 /* RecentFilesMenuTemplate.nib in Resources */,
+				1B5A744C189D0F10006AA760 /* blumlein.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -23,6 +23,7 @@ class SpeakerEditor
 public:
     
     SpeakerEditor();
+    SpeakerEditor (const File & f);
     virtual ~SpeakerEditor();
     
     void setEnabled (bool shouldBeEnabled);
@@ -37,6 +38,9 @@ public:
     void deleteKeyPressed (const int lastRowSelected);
     
     void resized();
+    
+    void openSettings (const File & f);
+    void saveSettings (const File & f) const;
     
     bool empty() const;
     std::vector<Speaker> getSpeakers() const;
@@ -56,7 +60,7 @@ private:
     ScopedPointer<Label> azimuthLabel;
     ScopedPointer<Label> shapeLabel;
     
-    ScopedPointer<Display> display;
+    ScopedPointer<SpeakerDisplay> display;
     
     template<typename T>
     static T wrap (const T min, const T max, T val)

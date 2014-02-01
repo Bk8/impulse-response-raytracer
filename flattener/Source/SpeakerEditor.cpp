@@ -7,6 +7,7 @@
 //
 
 #include "SpeakerEditor.h"
+#include "Adapters.h"
 
 SpeakerEditor::SpeakerEditor()
 :   speakerListBoxModel (speaker)
@@ -48,7 +49,13 @@ SpeakerEditor::SpeakerEditor()
     azimuthLabel->setText ("azimuth", dontSendNotification);
     shapeLabel->setText ("shape", dontSendNotification);
     
-    addAndMakeVisible (display = new Display (speaker));
+    addAndMakeVisible (display = new SpeakerDisplay());
+}
+
+SpeakerEditor::SpeakerEditor (const File & f)
+:   SpeakerEditor()
+{
+    openSettings (f);
 }
 
 SpeakerEditor::~SpeakerEditor()
@@ -60,11 +67,8 @@ void SpeakerEditor::buttonClicked (Button * button)
 {
     if (button == addSpeakerButton)
     {
-        speaker.push_back (Speaker (Vec (1, 0, 0), 1));
-        listBox->updateContent();
+        addSpeaker();
         removeSpeakerButton->setEnabled (true);
-        listBox->selectRow (speaker.size() - 1, sendNotification);
-        speakerSelected (listBox->getSelectedRow());
     }
     else if (button == removeSpeakerButton)
     {
@@ -83,6 +87,8 @@ void SpeakerEditor::sliderValueChanged (juce::Slider * slider)
     {
         speaker[listBox->getSelectedRow()].directionality = shapeSlider->getValue();
     }
+    
+    display->setSpeaker (speaker);
 }
 
 void SpeakerEditor::addSpeaker()
@@ -91,6 +97,8 @@ void SpeakerEditor::addSpeaker()
     listBox->updateContent();
     listBox->selectRow (speaker.size() - 1, sendNotification);
     speakerSelected (listBox->getSelectedRow());
+    
+    display->setSpeaker (speaker);
 }
 
 void SpeakerEditor::removeSpeaker (const int index)
@@ -104,6 +112,8 @@ void SpeakerEditor::removeSpeaker (const int index)
     {
         removeSpeakerButton->setEnabled (false);
     }
+    
+    display->setSpeaker (speaker);
 }
 
 void SpeakerEditor::speakerSelected (const int row)
@@ -120,6 +130,8 @@ void SpeakerEditor::speakerSelected (const int row)
                                  shapeSlider->getMaximum(),
                                  speaker[listBox->getSelectedRow()].directionality),
                            dontSendNotification);
+    
+    display->setSelectedIndex (row);
 }
 
 void SpeakerEditor::deleteKeyPressed (const int lastRowSelected)
@@ -223,4 +235,21 @@ bool SpeakerEditor::empty() const
 std::vector<Speaker> SpeakerEditor::getSpeakers() const
 {
     return speaker;
+}
+
+void SpeakerEditor::openSettings (const File & f)
+{
+    speaker = fromVar<vector<Speaker> > () (JSON::parse (f));
+    
+    listBox->updateContent();
+    listBox->selectRow (speaker.size() - 1, sendNotification);
+    speakerSelected (listBox->getSelectedRow());
+
+    display->setSpeaker (speaker);
+}
+
+void SpeakerEditor::saveSettings (const File & f) const
+{
+    FileOutputStream fos (f);
+    JSON::writeToStream (fos, getVar (speaker));
 }

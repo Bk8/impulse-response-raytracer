@@ -32,8 +32,21 @@ Flattener::Flattener (std::vector<Rayverb::RayTrace> & raytrace)
     
     addAndMakeVisible (speakerEditorGroup = new GroupComponent ("speaker editor group", "speaker settings"));
     
-    speakerEditorGroup->addAndMakeVisible (speakerEditor = new SpeakerEditor());
-    speakerEditor->setEnabled (false);
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    CFURLRef defaultURL = CFBundleCopyResourceURL (mainBundle, CFSTR("blumlein"), CFSTR("json"), NULL);
+    
+    
+    speakerEditorGroup->addAndMakeVisible
+    (   speakerEditor = new SpeakerEditor
+        (   File
+            (   CFStringGetCStringPtr
+                (   CFURLCopyFileSystemPath (defaultURL, kCFURLPOSIXPathStyle)
+                ,   kCFStringEncodingMacRoman
+                )
+            )
+        )
+    );
+//    speakerEditor->setEnabled (false);
     
     addAndMakeVisible (filterEditorGroup = new GroupComponent ("filter editor group", "filter settings"));
     
@@ -265,4 +278,14 @@ void Flattener::resized()
                               bitDepthBox->getBottom() + spacing,
                               bitDepthBox->getWidth(),
                               controlHeight);
+}
+
+void Flattener::openSettings (const juce::File &f)
+{
+    speakerEditor->openSettings (f);
+}
+
+void Flattener::saveSettings (const juce::File &f) const
+{
+    speakerEditor->saveSettings (f);
 }

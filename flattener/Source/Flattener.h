@@ -42,6 +42,9 @@ public:
     void paint (Graphics & g);
     void resized();
     
+    void openSettings (const File & f);
+    void saveSettings (const File & f) const;
+    
 private:
     ScopedPointer<TextButton> flattenButton;
     ScopedPointer<ProgressBar> progressBar;

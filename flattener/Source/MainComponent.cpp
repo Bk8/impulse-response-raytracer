@@ -58,6 +58,8 @@ void MainContentComponent::getAllCommands (Array <CommandID>& commands)
     const CommandID ids[] =
     {   openTrace
     ,   flatten
+    ,   openSettings
+    ,   saveSettings
     };
     
     commands.addArray (ids, numElementsInArray (ids));
@@ -71,13 +73,23 @@ void MainContentComponent::getCommandInfo (CommandID commandID, ApplicationComma
     {
         case openTrace:
             result.setInfo ("Open Trace...", "Open a JSON file containing trace data", generalCategory, 0);
-            result.addDefaultKeypress ('o', ModifierKeys::shiftModifier | ModifierKeys::commandModifier);
+            result.addDefaultKeypress ('o', ModifierKeys::commandModifier);
             break;
             
         case flatten:
             result.setInfo ("Flatten...", "Choose flatten options and create an audio file", generalCategory, 0);
             result.addDefaultKeypress ('f', ModifierKeys::commandModifier);
             result.setActive (flattener->canFlatten());
+            break;
+            
+        case openSettings:
+            result.setInfo ("Open speaker settings...", "Open a speaker configuration file", generalCategory, 0);
+            result.addDefaultKeypress ('o', ModifierKeys::shiftModifier | ModifierKeys::commandModifier);
+            break;
+            
+        case saveSettings:
+            result.setInfo ("Save speaker settings...", "Save the current speaker configuration", generalCategory, 0);
+            result.addDefaultKeypress ('s', ModifierKeys::commandModifier);
             break;
             
         default:
@@ -95,6 +107,14 @@ bool MainContentComponent::perform (const InvocationInfo& info)
             
         case flatten:
             doFlatten();
+            break;
+            
+        case openSettings:
+            doOpenSettings();
+            break;
+            
+        case saveSettings:
+            doSaveSettings();
             break;
             
         default:
@@ -125,5 +145,29 @@ void MainContentComponent::doFlatten()
     if (fc.browseForFileToSave (true))
     {
         flattener->writeAudio (fc.getResult());
+    }
+}
+
+void MainContentComponent::doOpenSettings()
+{
+    FileChooser fc ("Choose a file to open...",
+                    File::getCurrentWorkingDirectory(),
+                    "*.json");
+    
+    if (fc.browseForFileToOpen())
+    {
+        flattener->openSettings (fc.getResult());
+    }
+}
+
+void MainContentComponent::doSaveSettings()
+{
+    FileChooser fc ("Choose a file to save...",
+                    File::getCurrentWorkingDirectory(),
+                    "*.json");
+    
+    if (fc.browseForFileToSave (true))
+    {
+        flattener->saveSettings (fc.getResult());
     }
 }

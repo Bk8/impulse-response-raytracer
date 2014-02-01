@@ -1,5 +1,5 @@
 //
-//  Display.cpp
+//  SpeakerDisplay.cpp
 //  flattener
 //
 //  Created by Reuben Thomas on 26/01/2014.
@@ -8,8 +8,8 @@
 
 #include "Display.h"
 
-Display::Display (std::vector<Speaker> & speaker):
-speaker (speaker)
+SpeakerDisplay::SpeakerDisplay():
+selectedIndex (0)
 {
     setOpaque (true);
     
@@ -18,22 +18,22 @@ speaker (speaker)
     openGLContext.setContinuousRepainting (true);
 }
 
-Display::~Display()
+SpeakerDisplay::~SpeakerDisplay()
 {
     openGLContext.detach();
 }
 
-void Display::newOpenGLContextCreated()
+void SpeakerDisplay::newOpenGLContextCreated()
 {
     
 }
 
-void Display::openGLContextClosing()
+void SpeakerDisplay::openGLContextClosing()
 {
     
 }
 
-void Display::renderOpenGL()
+void SpeakerDisplay::renderOpenGL()
 {
     OpenGLHelpers::clear (Colours::black);
     
@@ -118,17 +118,20 @@ void Display::renderOpenGL()
     
 //    glPopMatrix();
     
-    for (auto i = speaker.begin(); i != speaker.end(); ++i)
+    speakerLock.enterRead();
+    
+    for (int i = 0; i != speaker.size(); ++i)
     {
-        drawSpeaker (*i);
+        drawSpeaker (speaker[i], i == selectedIndex);
     }
+    
+    speakerLock.exitRead();
 }
 
-void Display::drawSpeaker (const Speaker & s) const
+void SpeakerDisplay::drawSpeaker (const Speaker & s, const bool selected) const
 {
-    glLineWidth (3);
-    
-    glPointSize (3);
+    glLineWidth (selected ? 4 : 2);
+    glPointSize (selected ? 4 : 2);
     
     Vec dir = s.direction.normalized() * radius;
     
@@ -177,17 +180,17 @@ void Display::drawSpeaker (const Speaker & s) const
     glEnd();
 }
 
-void Display::paint (Graphics & g)
+void SpeakerDisplay::paint (Graphics & g)
 {
     
 }
 
-void Display::resized()
+void SpeakerDisplay::resized()
 {
     draggableOrientation.setViewport (getLocalBounds());
 }
 
-Matrix3D<float> Display::getProjectionMatrix() const
+Matrix3D<float> SpeakerDisplay::getProjectionMatrix() const
 {
     float scale = 1.0f;
     
@@ -210,19 +213,31 @@ Matrix3D<float> Display::getProjectionMatrix() const
     return ret;
 }
 
-Matrix3D<float> Display::getViewMatrix() const
+Matrix3D<float> SpeakerDisplay::getViewMatrix() const
 {
     Matrix3D<float> viewMatrix (Vector3D<float> (0.0f, 0.0f, -radius - 1));
     viewMatrix *= draggableOrientation.getRotationMatrix();
     return viewMatrix;
 }
 
-void Display::mouseDown (const MouseEvent& e)
+void SpeakerDisplay::mouseDown (const MouseEvent& e)
 {
     draggableOrientation.mouseDown (e.getPosition());
 }
 
-void Display::mouseDrag (const MouseEvent& e)
+void SpeakerDisplay::mouseDrag (const MouseEvent& e)
 {
     draggableOrientation.mouseDrag (e.getPosition());
+}
+
+void SpeakerDisplay::setSpeaker (const vector<Rayverb::Speaker> &s)
+{
+    speakerLock.enterWrite();
+    speaker = s;
+    speakerLock.exitWrite();
+}
+
+void SpeakerDisplay::setSelectedIndex (const int s)
+{
+    selectedIndex = s;
 }

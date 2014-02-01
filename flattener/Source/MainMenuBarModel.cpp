@@ -20,6 +20,9 @@ PopupMenu MainMenuBarModel::getMenuForIndex (int menuIndex, const String& menuNa
     {
         menu.addCommandItem (commandManager, MainContentComponent::openTrace);
         menu.addCommandItem (commandManager, MainContentComponent::flatten);
+        menu.addSeparator();
+        menu.addCommandItem (commandManager, MainContentComponent::openSettings);
+        menu.addCommandItem (commandManager, MainContentComponent::saveSettings);
     }
     
     return menu;

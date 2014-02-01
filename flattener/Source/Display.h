@@ -12,13 +12,13 @@
 #include "JuceHeader.h"
 #include "Speaker.h"
 
-class Display
+class SpeakerDisplay
 :   public Component
 ,   public OpenGLRenderer
 {
 public:
-    Display (std::vector<Speaker> & speaker);
-    virtual ~Display();
+    SpeakerDisplay();
+    virtual ~SpeakerDisplay();
     
     void newOpenGLContextCreated();
     void openGLContextClosing();
@@ -29,6 +29,9 @@ public:
     
     void mouseDown (const MouseEvent & e);
     void mouseDrag (const MouseEvent & e);
+    
+    void setSpeaker (const vector<Speaker> & s);
+    void setSelectedIndex (const int s);
         
 private:
     Draggable3DOrientation draggableOrientation;
@@ -39,9 +42,12 @@ private:
     
     const float radius = 1.5f;
     
-    std::vector<Speaker> & speaker;
+    std::vector<Speaker> speaker;
+    int selectedIndex;
     
-    void drawSpeaker (const Speaker & s) const;
+    ReadWriteLock speakerLock;
+    
+    void drawSpeaker (const Speaker & s, const bool selected) const;
 };
 
 #endif /* defined(__flattener__Display__) */

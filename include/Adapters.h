@@ -99,6 +99,17 @@ template <typename T> struct toVar <std::vector <T> >
     }
 };
 
+template <> struct toVar <Speaker>
+{
+    var operator() (const Speaker & in) const
+    {
+        DynamicObject * obj = new DynamicObject();
+        obj->setProperty ("d", getVar (in.direction));
+        obj->setProperty ("s", in.directionality);
+        return var (obj);
+    }
+};
+
 
 //  fromVar
 
@@ -169,6 +180,16 @@ template <typename T> struct fromVar <std::vector <T> >
             ret[i] = fromVar <T> () (in[i]);
         }
         return ret;
+    }
+};
+
+template <> struct fromVar <Speaker>
+{
+    Speaker operator() (const var & in) const
+    {
+        return Speaker (fromVar <Vec> () (in.getProperty ("d", 0)),
+                        in.getProperty ("s", 0));
+        
     }
 };
 
