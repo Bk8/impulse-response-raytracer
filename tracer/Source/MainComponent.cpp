@@ -56,18 +56,13 @@ void MainContentComponent::doOpen()
 
 void MainContentComponent::doTrace()
 {
-    tracer->doTrace();
-}
-
-void MainContentComponent::doWriteTrace()
-{
     FileChooser fc ("Choose a file to save...",
                     File::getCurrentWorkingDirectory(),
                     "*.json");
     
     if (fc.browseForFileToSave (true))
     {
-        tracer->writeTrace (fc.getResult());
+        tracer->doTrace (fc.getResult());
     }
 }
 
@@ -89,7 +84,6 @@ void MainContentComponent::getAllCommands (Array <CommandID>& commands)
     const CommandID ids[] =
     {   open
     ,   trace
-    ,   writeTrace
     };
     
     commands.addArray (ids, numElementsInArray (ids));
@@ -112,12 +106,6 @@ void MainContentComponent::getCommandInfo (CommandID commandID, ApplicationComma
             result.setActive (tracer->canTrace());
             break;
             
-        case writeTrace:
-            result.setInfo ("Export Trace...", "Write trace data to a JSON file", generalCategory, 0);
-            result.addDefaultKeypress ('s', ModifierKeys::commandModifier);
-            result.setActive (tracer->canWrite());
-            break;
-            
         default:
             break;
     }
@@ -133,10 +121,6 @@ bool MainContentComponent::perform (const InvocationInfo& info)
             
         case trace:
             doTrace();
-            break;
-            
-        case writeTrace:
-            doWriteTrace();
             break;
             
         default:

@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E9D2D9B9AF9DA5E6BE1118CE"
-               BuildableName = "rayverb.app"
+               BuildableName = "tracer.app"
                BlueprintName = "tracer"
                ReferencedContainer = "container:tracer.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E9D2D9B9AF9DA5E6BE1118CE"
-            BuildableName = "rayverb.app"
+            BuildableName = "tracer.app"
             BlueprintName = "tracer"
             ReferencedContainer = "container:tracer.xcodeproj">
          </BuildableReference>
@@ -52,7 +52,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E9D2D9B9AF9DA5E6BE1118CE"
-            BuildableName = "rayverb.app"
+            BuildableName = "tracer.app"
             BlueprintName = "tracer"
             ReferencedContainer = "container:tracer.xcodeproj">
          </BuildableReference>
@@ -70,7 +70,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E9D2D9B9AF9DA5E6BE1118CE"
-            BuildableName = "rayverb.app"
+            BuildableName = "tracer.app"
             BlueprintName = "tracer"
             ReferencedContainer = "container:tracer.xcodeproj">
          </BuildableReference>

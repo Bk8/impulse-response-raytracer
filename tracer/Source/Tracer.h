@@ -12,20 +12,21 @@
 #include "JuceHeader.h"
 #include "WavefrontObjParser.h"
 #include "TraceThread.h"
-#include "FileWriteThread.h"
 #include "Display.h"
+#include "VectorEditorComponent.h"
 
 class Tracer:
 public Component,
 public Button::Listener,
-public ThreadWithListener::Listener
+public ThreadWithListener::Listener,
+public VectorEditor<double>::Listener
 {
 public:
     Tracer ();
     virtual ~Tracer();
     
     void loadObjFile (const File & f);
-    void doTrace();
+    void doTrace (const File & f);
     
     void buttonClicked (Button *);
             
@@ -35,13 +36,13 @@ public:
     void clearPrimitives();
     
     bool canTrace() const;
-    bool canWrite() const;
     bool isTracing() const;
-    bool isWriting() const;
     
     var getTraceVar() const;
     
     void writeTrace (const File & f);
+    
+    void vectorEditorValueChanged (VectorEditor<double> * const ve);
     
 private:
     void threadStopped (ThreadWithListener * const);
@@ -57,8 +58,23 @@ private:
     std::vector<Rayverb::RayTrace> raytrace;
     
     ScopedPointer<TraceThread> traceThread;
-    ScopedPointer<JSONWriteThread> writeThread;
     
     ScopedPointer<Display> display;
+    
+    ScopedPointer<GroupComponent> micPositionGroup;
+    ScopedPointer<GroupComponent> sourcePositionGroup;
+    
+    ScopedPointer<VectorEditor<double> > micPositionEditor;
+    ScopedPointer<VectorEditor<double> > sourcePositionEditor;
+    
+    ScopedPointer<GroupComponent> raytraceSettingsGroup;
+    
+    ScopedPointer<ValueEditor<int> > rayNumberEditor;
+    ScopedPointer<ValueEditor<double> > volumeThresholdEditor;
+    
+    ScopedPointer<Label> rayNumberLabel;
+    ScopedPointer<Label> volumeThresholdLabel;
+    
+    ScopedPointer<GroupComponent> materialSettingsGroup;
 };
 #endif /* defined(__rayverb__Renderer__) */

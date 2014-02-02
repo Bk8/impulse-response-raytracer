@@ -20,7 +20,6 @@ PopupMenu MainMenuBarModel::getMenuForIndex (int menuIndex, const String& menuNa
     {
         menu.addCommandItem (commandManager, MainContentComponent::open);
         menu.addCommandItem (commandManager, MainContentComponent::trace);
-        menu.addCommandItem (commandManager, MainContentComponent::writeTrace);
     }
     
     return menu;

@@ -59,7 +59,7 @@ public:
             
             lookAndFeelV3.setColour (PopupMenu::highlightedBackgroundColourId, Colours::darkgrey);
             
-            centreWithSize (640, 480);
+            centreWithSize (900, 480);
             
             constrainer = new ComponentBoundsConstrainer();
             constrainer->setMinimumSize (getWidth(), getHeight());

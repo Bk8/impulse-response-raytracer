@@ -28,14 +28,12 @@ public:
     enum CommandIDs
     {   open = 0x2000
     ,   trace
-    ,   writeTrace
     };
     
 private:
     void doOpen();
     void doTrace();
-    void doWriteTrace();
-            
+    
     ScopedPointer<Tracer> tracer;
     
     ScopedPointer<MainMenuBarModel> mainMenuBarModel;

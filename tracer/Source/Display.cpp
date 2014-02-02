@@ -157,6 +157,8 @@ void Display::renderOpenGL()
         );
     }
     
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    
     shape->draw (openGLContext, *attributes);
     
     openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
@@ -167,7 +169,7 @@ Matrix3D<float> Display::getProjectionMatrix() const
 {
     float w = 1.0f / (zoom + 0.1f);
     float h = w * getLocalBounds().toFloat().getAspectRatio (false);
-    return Matrix3D<float>::fromFrustum (-w, w, -h, h, 4.0f, 30.0f);
+    return Matrix3D<float>::fromFrustum (-w, w, -h, h, 5.0f, 20.0f);
 }
 
 Matrix3D<float> Display::getViewMatrix() const
@@ -241,3 +243,18 @@ void Display::mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& whee
 {
     zoom += wheel.deltaY * 0.1;
 }
+
+void Display::setMicPosition (const Vector3D<float> mp)
+{
+    micLock.enterWrite();
+    micPosition = mp;
+    micLock.exitWrite();
+}
+
+void Display::setSourcePosition (const Vector3D<float> sp)
+{
+    sourceLock.enterWrite();
+    sourcePosition = sp;
+    sourceLock.exitWrite();
+}
+

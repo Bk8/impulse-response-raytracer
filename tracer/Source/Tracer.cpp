@@ -17,11 +17,9 @@ Tracer::Tracer()
     progressBar->setColour (ProgressBar::foregroundColourId, Colours::darkgrey);
     progressBar->setColour (ProgressBar::backgroundColourId, Colours::transparentBlack);
     
-    traceThread = new TraceThread (progress, raytrace);
+    traceThread = new TraceThread (progress);
     traceThread->addListener (this);
-    
-    writeThread = new JSONWriteThread();
-    
+        
     addAndMakeVisible (traceButton = new TextButton ("trace"));
     traceButton->addListener (this);
     traceButton->setColour (TextButton::buttonColourId, Colours::lightgrey);
@@ -29,17 +27,33 @@ Tracer::Tracer()
     
     addAndMakeVisible (display = new Display());
     
-    const Rayverb::Surface PLANE_SURFACE =
-    {
-        Material (1, 1),
-        Material (1, 1),
-        Material (1, 1)
-    };
+    addAndMakeVisible (micPositionGroup = new GroupComponent ("mic position group", "mic position"));
+    addAndMakeVisible (sourcePositionGroup = new GroupComponent ("source position group", "source position"));
     
-    primitive.push_back(new Rayverb::Sphere(PLANE_SURFACE,
-                                            true,
-                                            Vec(10, 2, -10),
-                                            0.001));
+    micPositionGroup->addAndMakeVisible (micPositionEditor = new VectorEditor<double>());
+    sourcePositionGroup->addAndMakeVisible (sourcePositionEditor = new VectorEditor<double>());
+    
+    addAndMakeVisible (raytraceSettingsGroup = new GroupComponent ("raytrace settings group", "raytrace settings"));
+    
+    raytraceSettingsGroup->addAndMakeVisible (rayNumberEditor = new ValueEditor<int>());
+    raytraceSettingsGroup->addAndMakeVisible (volumeThresholdEditor = new ValueEditor<double>());
+    
+    rayNumberEditor->setValue (1000, dontSendNotification);
+    volumeThresholdEditor->setValue(0.001, dontSendNotification);
+    
+    rayNumberEditor->setIncrement (10);
+    volumeThresholdEditor->setIncrement(0.1);
+    
+    rayNumberEditor->setMinimum (1);
+    volumeThresholdEditor->enableBounds (0, 1);
+    
+    raytraceSettingsGroup->addAndMakeVisible (rayNumberLabel = new Label());
+    raytraceSettingsGroup->addAndMakeVisible (volumeThresholdLabel = new Label());
+    
+    rayNumberLabel->setText("rays", dontSendNotification);
+    volumeThresholdLabel->setText("min vol", dontSendNotification);
+    
+    addAndMakeVisible (materialSettingsGroup = new GroupComponent ("material settings group", "material settings"));
 }
 
 Tracer::~Tracer()
@@ -86,11 +100,26 @@ void Tracer::loadObjFile (const juce::File &f)
     display->loadObjFile (f);
 }
 
-void Tracer::doTrace()
+void Tracer::doTrace (const File & f)
 {
-    Mic m (Vec (10.6, 2.1, -10.6));
+    Vector3D<double> mp = micPositionEditor->getValue();
+    Mic m (Vec (mp.x, mp.y, mp.z));
     
-    traceThread->setParameters (primitive, m, 1000);
+    const Rayverb::Surface SOURCE_SURFACE =
+    {
+        Material (1, 1),
+        Material (1, 1),
+        Material (1, 1)
+    };
+    
+    Vector3D<double> sp = sourcePositionEditor->getValue();
+    
+    primitive.push_back(new Rayverb::Sphere(SOURCE_SURFACE,
+                                            true,
+                                            Vec(sp.x, sp.y, sp.z),
+                                            0.001));
+    
+    traceThread->setParameters (f, primitive, m, rayNumberEditor->getValue(), volumeThresholdEditor->getValue());
     traceThread->startThread();
     
     traceButton->setEnabled (false);
@@ -129,7 +158,44 @@ void Tracer::resized()
                             buttonWidth,
                             controlHeight);
     
-    display->setBounds (getLocalBounds().removeFromTop(getHeight() - controlHeight - 2 * spacing));
+    const int bottomControlHeight = 125;
+    
+    display->setBounds (getLocalBounds().removeFromTop(getHeight() - controlHeight - 2 * spacing - bottomControlHeight));
+    
+    micPositionGroup->setBounds (spacing,
+                                 display->getBottom() + spacing,
+                                 170,
+                                 bottomControlHeight - 2 * spacing);
+    
+    sourcePositionGroup->setBounds (micPositionGroup->getRight() + spacing,
+                                    display->getBottom() + spacing,
+                                    170,
+                                    bottomControlHeight - 2 * spacing);
+    
+    micPositionEditor->setBounds (10,
+                                  20,
+                                  micPositionGroup->getWidth() - 20,
+                                  micPositionGroup->getHeight() - 30);
+    sourcePositionEditor->setBounds (10,
+                                     20,
+                                     sourcePositionGroup->getWidth() - 20,
+                                     sourcePositionGroup->getHeight() - 30);
+    
+    raytraceSettingsGroup->setBounds (sourcePositionGroup->getRight() + spacing,
+                                      display->getBottom() + spacing,
+                                      220,
+                                      bottomControlHeight - 2 * spacing);
+    
+    rayNumberLabel->setBounds(10, 20, 60, controlHeight);
+    volumeThresholdLabel->setBounds(10, rayNumberLabel->getBottom() + spacing, 60, controlHeight);
+    
+    rayNumberEditor->setBounds (rayNumberLabel->getRight() + spacing, 20, raytraceSettingsGroup->getWidth() - 10 - spacing - rayNumberLabel->getRight(), controlHeight);
+    volumeThresholdEditor->setBounds (volumeThresholdLabel->getRight() + spacing, rayNumberEditor->getBottom() + spacing, rayNumberEditor->getWidth(), controlHeight);
+    
+    materialSettingsGroup->setBounds (raytraceSettingsGroup->getRight() + spacing,
+                                      display->getBottom() + spacing,
+                                      getWidth() - 2 * spacing - raytraceSettingsGroup->getRight(),
+                                      bottomControlHeight - 2 * spacing);
 }
 
 void Tracer::paint (juce::Graphics &g)
@@ -151,35 +217,30 @@ bool Tracer::canTrace() const
     return (! isTracing()) && (primitive.size() > 1);
 }
 
-bool Tracer::canWrite() const
-{
-    return !raytrace.empty() && !isTracing() && !isWriting();
-}
-
 bool Tracer::isTracing() const
 {
     return traceThread->isThreadRunning();
-}
-
-bool Tracer::isWriting() const
-{
-    return writeThread->isThreadRunning();
-}
-
-void Tracer::writeTrace (const File & f)
-{
-    if (! writeThread->isThreadRunning())
-    {
-        writeThread->setParameters (f, getVar (raytrace));
-        writeThread->startThread();
-    }
 }
 
 void Tracer::threadStopped (ThreadWithListener * const twl)
 {
     if (twl == traceThread)
     {
+        primitive.pop_back();
+        
         traceButton->setEnabled (canTrace());
         progressBar->setVisible (false);
+    }
+}
+
+void Tracer::vectorEditorValueChanged (VectorEditor<double> * const ve)
+{
+    if (ve == micPositionEditor)
+    {
+        
+    }
+    else if (ve == sourcePositionEditor)
+    {
+        
     }
 }

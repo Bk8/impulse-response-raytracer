@@ -14,12 +14,11 @@
 vector<Reflection> trace(const vector<Primitive *> & primitive,
                          const Ray & ray,
                          const Real distance,
-                         const VolumeCollection & volume) {
-    const Real VOLUME_THRESHOLD = 0.001;
-    
+                         const VolumeCollection & volume,
+                         const Real volumeThreshold) {
     bool allLower = true;
     for (auto i = volume.begin(); i != volume.end(); ++i)
-        if (*i > VOLUME_THRESHOLD) {
+        if (*i > volumeThreshold) {
             allLower = false;
             break;
         }
@@ -59,7 +58,8 @@ vector<Reflection> trace(const vector<Primitive *> & primitive,
         const vector<Reflection> TRACE = trace(primitive,
                                                REFLECTED_RAY,
                                                NEW_DISTANCE,
-                                               newVolume);
+                                               newVolume,
+                                               volumeThreshold);
                 
         ret.insert(ret.end(), TRACE.begin(), TRACE.end());
     }
@@ -70,9 +70,8 @@ vector<Reflection> trace(const vector<Primitive *> & primitive,
 vector<Reflection> itrace(const vector<Primitive *> & primitive,
                           const Ray & ray,
                           const Real distance,
-                          const VolumeCollection & volume) {
-    const Real VOLUME_THRESHOLD = 0.001;
-    
+                          const VolumeCollection & volume,
+                          const Real volumeThreshold) {
     Ray currentRay = ray;
     Real currentDistance = distance;
     VolumeCollection currentVolume = volume;
@@ -81,7 +80,7 @@ vector<Reflection> itrace(const vector<Primitive *> & primitive,
     while (true) {
         bool allLower = true;
         for (auto i = currentVolume.begin(); i != currentVolume.end(); ++i) {
-            if (*i > VOLUME_THRESHOLD) {
+            if (*i > volumeThreshold) {
                 allLower = false;
                 break;
             }
@@ -149,10 +148,11 @@ vector<Impulse> toImpulsesAllSources(const vector<Primitive *> & primitive,
 }
 
 vector<Impulse> traceToImpulse(const vector<Primitive *> & primitive,
-                               const Ray & ray) {
+                               const Ray & ray,
+                               const Real volumeThreshold) {
     VolumeCollection startingVolumes;
     startingVolumes.fill(1);
-    const vector<Reflection> REFLECTION = itrace(primitive, ray, 0, startingVolumes);
+    const vector<Reflection> REFLECTION = itrace(primitive, ray, 0, startingVolumes, volumeThreshold);
     const vector<Primitive *> SOURCES = getSources(primitive);
     
     vector<Impulse> ret;
@@ -165,19 +165,21 @@ vector<Impulse> traceToImpulse(const vector<Primitive *> & primitive,
 }
 
 RayTrace traceDirection(const vector<Primitive *> & primitive,
-                        const Ray & ray) {
-    return pair<Vec, vector<Impulse> >(ray.direction, traceToImpulse(primitive, ray));
+                        const Ray & ray,
+                        const Real volumeThreshold) {
+    return pair<Vec, vector<Impulse> >(ray.direction, traceToImpulse(primitive, ray, volumeThreshold));
 }
 
 vector<RayTrace> Scene::traceMic(const vector<Primitive *> & primitive,
                                  Mic mic,
                                  const int rays,
+                                 const Real volumeThreshold,
                                  double & ratioDone) {
     vector<RayTrace> ret;
     for (int i = 0; i != rays; ++i) {
         ratioDone = i / (rays - 1.0);
         
-        RayTrace r = traceDirection(primitive, mic.createRay());
+        RayTrace r = traceDirection(primitive, mic.createRay(), volumeThreshold);
         if (! r.second.empty())
             ret.push_back(r);
     }
@@ -390,27 +392,4 @@ vector<vector<Real> > Scene::getChannelSamples(const vector<RayTrace> & raytrace
     vector<vector<Real> > sampleData = createSampleData(SAMPLES, sampleRate, raytrace, speaker, midpoint);
     normalize(sampleData);
     return sampleData;
-}
-
-Scene::~Scene() {
-    clearPrimitives();
-}
-
-void Scene::addPrimitive(Rayverb::Primitive *p) {
-    primitive.push_back(p);
-}
-
-void Scene::clearPrimitives() {
-    for (auto i = primitive.begin(); i != primitive.end(); ++i) {
-        delete *i;
-    }
-    primitive.clear();
-}
-
-void Scene::setMic(const Rayverb::Mic &m) {
-    mic = m;
-}
-
-vector<RayTrace> Scene::trace(const int rays, double &ratioDone) const {
-    return traceMic(primitive, mic, rays, ratioDone);
 }

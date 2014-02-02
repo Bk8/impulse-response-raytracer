@@ -91,7 +91,7 @@ private:
             openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, vertexBuffer);
             
             Array<Vertex> vertices;
-            createVertexListFromMesh (shape.mesh, vertices, Colours::green);
+            createVertexListFromMesh (shape.mesh, vertices, Colours::black);
             
             openGLContext.extensions.glBufferData (GL_ARRAY_BUFFER, vertices.size() * sizeof (Vertex),
                                                    vertices.getRawDataPointer(), GL_STATIC_DRAW);
@@ -169,6 +169,9 @@ public:
     void mouseDown (const MouseEvent& e);
     void mouseDrag (const MouseEvent& e);
     void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel);
+    
+    void setMicPosition (const Vector3D<float> mp);
+    void setSourcePosition (const Vector3D<float> sp);
 
 private:
     float zoom;
@@ -184,9 +187,13 @@ private:
     Matrix3D<float> getProjectionMatrix() const;
     Matrix3D<float> getViewMatrix() const;
     
-    WavefrontObjFile objFile;
+    Vector3D<float> micPosition;
+    ReadWriteLock micLock;
     
-    ReadWriteLock rwl;
+    Vector3D<float> sourcePosition;
+    ReadWriteLock sourceLock;
+    
+    WavefrontObjFile objFile;
 };
 
 #endif /* defined(__rayverb__Display__) */

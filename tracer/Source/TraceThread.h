@@ -19,29 +19,34 @@ class TraceThread:
 public ThreadWithListener
 {
 public:
-    TraceThread (double & progress,
-                 std::vector<Rayverb::RayTrace> & raytrace);
+    TraceThread (double & progress);
     virtual ~TraceThread();
     
     virtual void run();
     
+    virtual void setFile (const File & f);
     virtual void setPrimitives (const std::vector<Primitive *> p);
     virtual void setMic (const Rayverb::Mic & m);
     virtual void setRays (const int r);
+    virtual void setVolumeThreshold (const double d);
     
     virtual void setProgress (double & d);
     
-    virtual void setParameters (const std::vector<Primitive *> p,
+    virtual void setParameters (const File & f,
+                                const std::vector<Primitive *> p,
                                 const Rayverb::Mic & m,
-                                const int r);
+                                const int r,
+                                const double d);
         
 private:
     std::vector<Primitive *> primitive;
     Rayverb::Mic mic;
+    File file;
     int rays;
     double & progress;
+    double volumeThreshold;
     
-    std::vector<Rayverb::RayTrace> & raytrace;
+    std::vector<Rayverb::RayTrace> raytrace;
 };
 
 #endif /* defined(__rayverb__TraceThread__) */
