@@ -18,24 +18,19 @@ namespace Rayverb {
 
 class Impulse {
 public:
-    uint64_t  samplePosition;
+    Real samplePosition;
     VolumeCollection amplitude;
     
-//    Impulse(const var & v);
-    Impulse(const uint64_t samplePosition, const VolumeCollection & amplitude);
+    Impulse(const Real samplePosition, const VolumeCollection & amplitude);
     Impulse(const Sphere * source, const Reflection & reflection);
     Impulse();
     
-//    var getVar() const;
-    
-private:
-//    static var volumeCollectionToVar (const VolumeCollection & vc);
-//    static VolumeCollection varToVolumeCollection (const var & vc);
+    uint64_t getPositionInSamples (const Real sampleRate) const;
+    Real getPositionInSeconds() const;
 };
 
-const Real      SAMPLE_RATE         = 44100;
 const Real      SPEED_OF_SOUND      = 340;
-const Real      SAMPLES_PER_UNIT    = SAMPLE_RATE / SPEED_OF_SOUND;
+const Real      SECONDS_PER_METRE   = 1 / SPEED_OF_SOUND;
 
 }
 

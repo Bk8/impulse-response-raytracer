@@ -10,7 +10,7 @@
 #include "Adapters.h"
 #include "MainComponent.h"
 
-Tracer::Tracer(std::vector<Rayverb::RayTrace> & raytrace): raytrace (raytrace)
+Tracer::Tracer()
 {
     addChildComponent (progressBar = new ProgressBar (progress));
     progressBar->setPercentageDisplay (false);
@@ -82,20 +82,19 @@ void Tracer::loadObjFile (const juce::File &f)
     }
     
     traceButton->setEnabled (canTrace());
+    
+    display->loadObjFile (f);
 }
 
 void Tracer::doTrace()
 {
-//    if (! traceThread->isThreadRunning())
-//    {
-        Mic m (Vec (10.6, 2.1, -10.6));
-        
-        traceThread->setParameters (primitive, m, 10000);
-        traceThread->startThread();
-        
-        traceButton->setEnabled (false);
-        progressBar->setVisible (true);
-//    }
+    Mic m (Vec (10.6, 2.1, -10.6));
+    
+    traceThread->setParameters (primitive, m, 1000);
+    traceThread->startThread();
+    
+    traceButton->setEnabled (false);
+    progressBar->setVisible (true);
 }
 
 void Tracer::buttonClicked (juce::Button * button)
@@ -152,6 +151,11 @@ bool Tracer::canTrace() const
     return (! isTracing()) && (primitive.size() > 1);
 }
 
+bool Tracer::canWrite() const
+{
+    return !raytrace.empty() && !isTracing() && !isWriting();
+}
+
 bool Tracer::isTracing() const
 {
     return traceThread->isThreadRunning();
@@ -162,16 +166,11 @@ bool Tracer::isWriting() const
     return writeThread->isThreadRunning();
 }
 
-var Tracer::getTraceVar() const
-{
-    return getVar (raytrace);
-}
-
 void Tracer::writeTrace (const File & f)
 {
     if (! writeThread->isThreadRunning())
     {
-        writeThread->setParameters (f, getTraceVar());
+        writeThread->setParameters (f, getVar (raytrace));
         writeThread->startThread();
     }
 }

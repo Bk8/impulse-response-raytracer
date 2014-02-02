@@ -40,6 +40,13 @@ void Attributes::enable (OpenGLContext& openGLContext)
     }
 }
 
+void Attributes::disable (OpenGLContext& openGLContext)
+{
+    if (position != nullptr)       openGLContext.extensions.glDisableVertexAttribArray (position->attributeID);
+    if (normal != nullptr)         openGLContext.extensions.glDisableVertexAttribArray (normal->attributeID);
+    if (sourceColour != nullptr)   openGLContext.extensions.glDisableVertexAttribArray (sourceColour->attributeID);
+}
+
 OpenGLShaderProgram::Attribute* Attributes::createAttribute
 (   OpenGLContext& openGLContext
 ,   OpenGLShaderProgram& shader
@@ -72,7 +79,8 @@ OpenGLShaderProgram::Uniform* Uniforms::createUniform
     return new OpenGLShaderProgram::Uniform (shader, uniformName);
 }
 
-Display::Display()
+Display::Display():
+zoom (1.0)
 {
     setOpaque (true);
     
@@ -93,6 +101,7 @@ void Display::newOpenGLContextCreated()
 
 void Display::openGLContextClosing()
 {
+    shape = nullptr;
     shader = nullptr;
     attributes = nullptr;
     uniforms = nullptr;
@@ -100,7 +109,7 @@ void Display::openGLContextClosing()
 
 void Display::renderOpenGL()
 {
-    OpenGLHelpers::clear (Colours::black);
+    OpenGLHelpers::clear (Colours::grey);
     
     glEnable (GL_DEPTH_TEST);
     glDepthFunc (GL_LESS);
@@ -141,14 +150,14 @@ void Display::renderOpenGL()
     {
         openGLContext.extensions.glUniform4f
         (   uni->uniformID
-        ,   -15.0f
-        ,   10.0f
-        ,   15.0f
-        ,   0.0f
+        ,   0.5f
+        ,   1.0f
+        ,   0.5f
+        ,   0.1f
         );
     }
     
-    //  draw here
+    shape->draw (openGLContext, *attributes);
     
     openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
     openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -156,15 +165,14 @@ void Display::renderOpenGL()
 
 Matrix3D<float> Display::getProjectionMatrix() const
 {
-    float scale = 1.0f;
-    float w = 1.0f / (scale + 0.1f);
+    float w = 1.0f / (zoom + 0.1f);
     float h = w * getLocalBounds().toFloat().getAspectRatio (false);
     return Matrix3D<float>::fromFrustum (-w, w, -h, h, 4.0f, 30.0f);
 }
 
 Matrix3D<float> Display::getViewMatrix() const
 {
-    Matrix3D<float> viewMatrix (Vector3D<float> (0.0f, 1.0f, -10.0f));
+    Matrix3D<float> viewMatrix (Vector3D<float> (0.0f, 0.0f, -10.0f));
     viewMatrix *= draggableOrientation.getRotationMatrix();
     return viewMatrix;
 }
@@ -179,9 +187,16 @@ void Display::resized()
 void Display::loadShader()
 {
     ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
-        
-    String newVertexShader = File ("./rayverb.app/Contents/Resources/vert.glsl").loadFileAsString();
-    String newFragmentShader = File ("./rayverb.app/Contents/Resources/frag.glsl").loadFileAsString();
+    
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    
+    CFURLRef vertURL = CFBundleCopyResourceURL (mainBundle, CFSTR("vert"), CFSTR("glsl"), NULL);
+    CFURLRef fragURL = CFBundleCopyResourceURL (mainBundle, CFSTR("frag"), CFSTR("glsl"), NULL);
+    
+    String newVertexShader = File (CFStringGetCStringPtr (CFURLCopyFileSystemPath (vertURL, kCFURLPOSIXPathStyle),
+                                                          kCFStringEncodingMacRoman)).loadFileAsString();
+    String newFragmentShader = File (CFStringGetCStringPtr (CFURLCopyFileSystemPath (fragURL, kCFURLPOSIXPathStyle),
+                                                            kCFStringEncodingMacRoman)).loadFileAsString();
     
     if
     (   newShader->addVertexShader      (newVertexShader)
@@ -189,12 +204,14 @@ void Display::loadShader()
     &&  newShader->link()
     )
     {
+        shape = nullptr;
         attributes = nullptr;
         uniforms = nullptr;
         
         shader = newShader;
         shader->use();
         
+        shape = new Shape();
         attributes = new Attributes (openGLContext, *shader);
         uniforms   = new Uniforms (openGLContext, *shader);
     }
@@ -202,4 +219,25 @@ void Display::loadShader()
     {
         //  oh noes
     }
+}
+
+void Display::loadObjFile( const File & file)
+{
+    objFile.load (file);
+    shape->loadObjFile(objFile, openGLContext);
+}
+
+void Display::mouseDown (const MouseEvent& e)
+{
+    draggableOrientation.mouseDown (e.getPosition());
+}
+
+void Display::mouseDrag (const MouseEvent& e)
+{
+    draggableOrientation.mouseDrag (e.getPosition());
+}
+
+void Display::mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel)
+{
+    zoom += wheel.deltaY * 0.1;
 }

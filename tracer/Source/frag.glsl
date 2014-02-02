@@ -1,6 +1,12 @@
-uniform sampler2D tex;
+uniform vec4 lightPosition;
 
-void main()
+varying vec3 ec_pos;
+
+void main (void)
 {
-	gl_FragColor = gl_Color * texture2D(tex, gl_TexCoord[0].xy);
+	vec3 ec_normal = normalize (cross (dFdx (ec_pos), dFdy (ec_pos)));
+    
+	float intensity = dot (gl_ModelViewMatrix * lightPosition, vec4 (ec_normal, 1.0));
+    
+	gl_FragColor = gl_Color * vec4 (vec3 (intensity), 1.0) + vec4 (0.0, 1.0, 1.0, 1.0);
 }

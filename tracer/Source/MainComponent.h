@@ -35,9 +35,7 @@ private:
     void doOpen();
     void doTrace();
     void doWriteTrace();
-    
-    std::vector<Rayverb::RayTrace> raytrace;
-        
+            
     ScopedPointer<Tracer> tracer;
     
     ScopedPointer<MainMenuBarModel> mainMenuBarModel;

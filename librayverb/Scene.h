@@ -33,6 +33,7 @@ public:
     
     static vector<vector<Real> > getChannelSamples(const vector<RayTrace> & raytrace,
                                                    const vector<Speaker> & speaker,
+                                                   const Real sampleRate,
                                                    const array<Real, BANDS - 1> midpoint);
     
     virtual ~Scene();

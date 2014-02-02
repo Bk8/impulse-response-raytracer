@@ -706,7 +706,7 @@
 		B8937EF76497DC6AAE4D6715 /* juce_ScrollBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_ScrollBar.h; path = ../../../../JUCE/modules/juce_gui_basics/layout/juce_ScrollBar.h; sourceTree = SOURCE_ROOT; };
 		B9481B1095082505E75476C6 /* juce_Viewport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_Viewport.h; path = ../../../../JUCE/modules/juce_gui_basics/layout/juce_Viewport.h; sourceTree = SOURCE_ROOT; };
 		B95E10FA13F1BDA5624253E3 /* juce_QuickTimeMovieComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_QuickTimeMovieComponent.h; path = ../../../../JUCE/modules/juce_video/playback/juce_QuickTimeMovieComponent.h; sourceTree = SOURCE_ROOT; };
-		B9B052C4A6649EB57D93A4DF /* rayverb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rayverb.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9B052C4A6649EB57D93A4DF /* tracer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tracer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9D701572B7001E89AACDB1B /* juce_MemoryMappedFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MemoryMappedFile.h; path = ../../../../JUCE/modules/juce_core/files/juce_MemoryMappedFile.h; sourceTree = SOURCE_ROOT; };
 		B9D945F076504385FE91CF10 /* juce_AudioDeviceManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_AudioDeviceManager.cpp; path = ../../../../JUCE/modules/juce_audio_devices/audio_io/juce_AudioDeviceManager.cpp; sourceTree = SOURCE_ROOT; };
 		BA53296C45FF1B0BAB4D7D78 /* juce_ApplicationCommandInfo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_ApplicationCommandInfo.cpp; path = ../../../../JUCE/modules/juce_gui_basics/commands/juce_ApplicationCommandInfo.cpp; sourceTree = SOURCE_ROOT; };
@@ -1547,7 +1547,7 @@
 		3B9DF372E76899195FA2AC42 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B9B052C4A6649EB57D93A4DF /* rayverb.app */,
+				B9B052C4A6649EB57D93A4DF /* tracer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2682,7 +2682,7 @@
 			name = tracer;
 			productInstallPath = "$(HOME)/Applications";
 			productName = tracer;
-			productReference = B9B052C4A6649EB57D93A4DF /* rayverb.app */;
+			productReference = B9B052C4A6649EB57D93A4DF /* tracer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2805,6 +2805,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = tracer;
 				SDKROOT_ppc = macosx10.5;
 			};
 			name = Debug;
@@ -2878,6 +2879,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
+				PRODUCT_NAME = tracer;
 				SDKROOT_ppc = macosx10.5;
 			};
 			name = Release;

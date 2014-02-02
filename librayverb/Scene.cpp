@@ -181,26 +181,26 @@ vector<RayTrace> Scene::traceMic(const vector<Primitive *> & primitive,
         if (! r.second.empty())
             ret.push_back(r);
     }
-    cout << endl;
     return ret;
 }
 
-const uint64_t lastSample(const vector<Impulse> & impulse) {
+const uint64_t lastSample(const vector<Impulse> & impulse, const Real sampleRate) {
     uint64_t last = 0;
     for (auto i = impulse.begin(); i != impulse.end(); ++i)
-        last = max(last, i->samplePosition);
+        last = max(last, i->getPositionInSamples(sampleRate));
     return last;
 }
 
-const uint64_t lastSample(const vector<RayTrace> & raytrace) {
+const uint64_t lastSample(const vector<RayTrace> & raytrace, const Real sampleRate) {
     uint64_t last = 0;
     for (auto i = raytrace.begin(); i != raytrace.end(); ++i) {
-        last = max(last, lastSample(i->second));
+        last = max(last, lastSample(i->second, sampleRate));
     }
     return last;
 }
 
 vector<Real> createChannel(const uint64_t samples,
+                           const Real sampleRate,
                            const vector<RayTrace> & raytrace,
                            const Speaker & speaker,
                            const uint64_t band) {
@@ -209,26 +209,30 @@ vector<Real> createChannel(const uint64_t samples,
     for (auto i = raytrace.begin(); i != raytrace.end(); ++i) {
         const float ATTENUATION = speaker.attenuation(i->first);
         for (auto j = i->second.begin(); j != i->second.end(); ++j)
-            if (j->samplePosition < samples)
-                channel[j->samplePosition] += ATTENUATION * j->amplitude[band];
+        {
+            uint64_t samplePos = j->getPositionInSamples (sampleRate);
+            if (samplePos < samples)
+                channel[samplePos] += ATTENUATION * j->amplitude[band];
+        }
     }
     return channel;
 }
 
 vector<vector<Real> > createBand(const uint64_t samples,
+                                 const Real sampleRate,
                                  const vector<RayTrace> & raytrace,
                                  const vector<Speaker> & speaker,
                                  const uint64_t band) {
     vector<vector<Real> > sampleData;
     for (auto i = speaker.begin(); i != speaker.end(); ++i)
-        sampleData.push_back(createChannel(samples, raytrace, *i, band));
+        sampleData.push_back(createChannel(samples, sampleRate, raytrace, *i, band));
     return sampleData;
 }
 
-void simpleFilterBand(vector<vector<Real> > & sampleData, const Real cutoff) {
+void simpleFilterBand(vector<vector<Real> > & sampleData, const Real sampleRate, const Real cutoff) {
     for (auto i = sampleData.begin(); i != sampleData.end(); ++i) {
         const Real FREQ = 200;
-        const Real x = exp(-2.0 * M_PI * FREQ / SAMPLE_RATE);
+        const Real x = exp(-2.0 * M_PI * FREQ / sampleRate);
         const Real a0 = 1.0 - x;
         
         Real out = 0;
@@ -279,18 +283,19 @@ vector<vector<Real> > nestedSubtract (const vector<vector<Real> > & a,
 }
 
 vector<vector<Real> > createSampleData (const uint64_t samples,
+                                        const Real sampleRate,
                                         const vector<RayTrace> & raytrace,
                                         const vector<Speaker> & speaker,
                                         const array<Real, BANDS - 1> midpoint) {
     vector<vector<vector<Real> > > sampleData;
     for (int i = 0; i != BANDS; ++i) {
-        vector<vector<Real> > thisBand = createBand(samples, raytrace, speaker, i);
+        vector<vector<Real> > thisBand = createBand(samples, sampleRate, raytrace, speaker, i);
         
-        if (i != BANDS - 1) simpleFilterBand(thisBand, midpoint[i]);
+        if (i != BANDS - 1) simpleFilterBand(thisBand, sampleRate, midpoint[i]);
 
         if (i != 0) {
             vector<vector<Real> > thisBandCopy = thisBand;
-            simpleFilterBand(thisBandCopy, midpoint[i - 1]);
+            simpleFilterBand(thisBandCopy, sampleRate, midpoint[i - 1]);
             sampleData.push_back(nestedSubtract(thisBand, thisBandCopy));
         } else {
             sampleData.push_back(thisBand);
@@ -303,7 +308,7 @@ vector<vector<Real> > createSampleData (const uint64_t samples,
 //    return flattened;
     
     vector<vector<Real> > flattenedCopy = flattened;
-    simpleFilterBand(flattenedCopy, 0);
+    simpleFilterBand(flattenedCopy, sampleRate, 0);
     return nestedSubtract(flattened, flattenedCopy);
 }
 
@@ -377,11 +382,12 @@ vector<Real> interleave(const vector<vector<Real> > & sampleData) {
 
 vector<vector<Real> > Scene::getChannelSamples(const vector<RayTrace> & raytrace,
                                                const vector<Speaker> & speaker,
+                                               const Real sampleRate,
                                                const array<Real, BANDS - 1> midpoint) {
     const uint64_t MAX_SAMPLE = 1000000;
-    const uint64_t SAMPLES = min(MAX_SAMPLE, lastSample(raytrace));
+    const uint64_t SAMPLES = min(MAX_SAMPLE, lastSample(raytrace, sampleRate));
     
-    vector<vector<Real> > sampleData = createSampleData(SAMPLES, raytrace, speaker, midpoint);
+    vector<vector<Real> > sampleData = createSampleData(SAMPLES, sampleRate, raytrace, speaker, midpoint);
     normalize(sampleData);
     return sampleData;
 }

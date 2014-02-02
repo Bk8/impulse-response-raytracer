@@ -8,18 +8,13 @@
 
 #include "Impulse.h"
 
-//Impulse::Impulse(const var & v) {
-//    samplePosition = (int64)v.getProperty("p", 0);
-//    amplitude = varToVolumeCollection (v.getProperty("a", 0));
-//}
-
-Impulse::Impulse(const uint64_t samplePosition,
+Impulse::Impulse(const Real samplePosition,
                  const VolumeCollection & amplitude):
 samplePosition(samplePosition),
 amplitude(amplitude) {}
 
 Impulse::Impulse(const Sphere * source, const Reflection & reflection)  {
-    samplePosition = SAMPLES_PER_UNIT * (reflection.distance +
+    samplePosition = SECONDS_PER_METRE * (reflection.distance +
                                          (source->origin -
                                           reflection.position).length() -
                                          source->radius);
@@ -56,30 +51,12 @@ Impulse::Impulse(const Sphere * source, const Reflection & reflection)  {
 
 Impulse::Impulse(): Impulse(0, {0, 0, 0}) {}
 
-//var Impulse::getVar() const
-//{
-//    DynamicObject * obj = new DynamicObject();
-//    obj->setProperty ("p", (int64)samplePosition);
-//    obj->setProperty ("a", volumeCollectionToVar (amplitude));
-//    return var (obj);
-//}
+uint64_t Impulse::getPositionInSamples (const Real sampleRate) const
+{
+    return round (sampleRate * samplePosition);
+}
 
-//var Impulse::volumeCollectionToVar (const VolumeCollection & vc)
-//{
-//    var ret;
-//    for (auto i = vc.begin(); i != vc.end(); ++i)
-//    {
-//        ret.append (*i);
-//    }
-//    return ret;
-//}
-
-//VolumeCollection Impulse::varToVolumeCollection(const juce::var &vc)
-//{
-//    VolumeCollection ret;
-//    for (uint64_t i = 0; i != ret.size(); ++i)
-//    {
-//        ret[i] = vc[i];
-//    }
-//    return ret;
-//}
+Real Impulse::getPositionInSeconds() const
+{
+    return samplePosition;
+}

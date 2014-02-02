@@ -6,7 +6,7 @@ static ScopedPointer<ApplicationCommandManager> applicationCommandManager;
 
 MainContentComponent::MainContentComponent()
 {
-    addAndMakeVisible (tracer = new Tracer (raytrace));
+    addAndMakeVisible (tracer = new Tracer());
     
     ApplicationCommandManager& commandManager = getApplicationCommandManager();
     
@@ -115,7 +115,7 @@ void MainContentComponent::getCommandInfo (CommandID commandID, ApplicationComma
         case writeTrace:
             result.setInfo ("Export Trace...", "Write trace data to a JSON file", generalCategory, 0);
             result.addDefaultKeypress ('s', ModifierKeys::commandModifier);
-            result.setActive (! raytrace.empty() && ! tracer->isWriting());
+            result.setActive (tracer->canWrite());
             break;
             
         default:

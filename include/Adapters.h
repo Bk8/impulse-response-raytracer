@@ -61,7 +61,7 @@ template <> struct toVar <Impulse>
     var operator() (const Impulse & in) const
     {
         DynamicObject * obj = new DynamicObject();
-        obj->setProperty ("p", (int64)in.samplePosition);
+        obj->setProperty ("p", in.samplePosition);
         obj->setProperty ("a", getVar (in.amplitude));
         return var (obj);
     }
@@ -149,7 +149,7 @@ template <> struct fromVar <Impulse>
 {
     Impulse operator() (const var & in) const
     {
-        return Impulse ((int64)in.getProperty ("p", 0),
+        return Impulse (in.getProperty ("p", 0),
                         fromVar <VolumeCollection> () (in.getProperty("a", 0)));
     }
 };

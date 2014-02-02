@@ -23,8 +23,10 @@
   ==============================================================================
 */
 
-#include <map>
+#ifndef __rayverb__wavefrontObjFile__
+#define __rayverb__wavefrontObjFile__
 
+#include <map>
 
 //==============================================================================
 /**
@@ -357,3 +359,5 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WavefrontObjFile)
 };
+
+#endif

@@ -35,7 +35,6 @@ Flattener::Flattener (std::vector<Rayverb::RayTrace> & raytrace)
     CFBundleRef mainBundle = CFBundleGetMainBundle();
     CFURLRef defaultURL = CFBundleCopyResourceURL (mainBundle, CFSTR("blumlein"), CFSTR("json"), NULL);
     
-    
     speakerEditorGroup->addAndMakeVisible
     (   speakerEditor = new SpeakerEditor
         (   File

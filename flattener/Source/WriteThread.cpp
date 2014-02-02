@@ -26,7 +26,7 @@ void WriteThread::run()
 {
 //    Rayverb::Scene::writeRayTrace (raytrace, speaker, path);
     
-    vector<vector<double> > channelSamples = Rayverb::Scene::getChannelSamples (raytrace, speaker, {200, 2000});
+    vector<vector<double> > channelSamples = Rayverb::Scene::getChannelSamples (raytrace, speaker, sampleRate, midpoint);
     
     const unsigned int channels = channelSamples.size();
     const unsigned int samples = channelSamples.front().size();

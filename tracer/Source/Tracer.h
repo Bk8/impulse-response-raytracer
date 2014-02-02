@@ -21,7 +21,7 @@ public Button::Listener,
 public ThreadWithListener::Listener
 {
 public:
-    Tracer (std::vector<Rayverb::RayTrace> & raytrace);
+    Tracer ();
     virtual ~Tracer();
     
     void loadObjFile (const File & f);
@@ -35,6 +35,7 @@ public:
     void clearPrimitives();
     
     bool canTrace() const;
+    bool canWrite() const;
     bool isTracing() const;
     bool isWriting() const;
     
@@ -53,7 +54,7 @@ private:
     ScopedPointer<ProgressBar> progressBar;
     double progress;
     
-    std::vector<Rayverb::RayTrace> & raytrace;
+    std::vector<Rayverb::RayTrace> raytrace;
     
     ScopedPointer<TraceThread> traceThread;
     ScopedPointer<JSONWriteThread> writeThread;
