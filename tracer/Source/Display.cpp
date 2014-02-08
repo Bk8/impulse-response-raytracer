@@ -8,79 +8,9 @@
 
 #include "Display.h"
 
-Attributes::Attributes
-(   OpenGLContext& openGLContext
-,   OpenGLShaderProgram& shader
-)
-:   position        (createAttribute (openGLContext, shader, "position"))
-,   normal          (createAttribute (openGLContext, shader, "normal"))
-,   sourceColour    (createAttribute (openGLContext, shader, "sourceColour"))
-{
-    
-}
-    
-void Attributes::enable (OpenGLContext& openGLContext)
-{
-    if (position != nullptr)
-    {
-        openGLContext.extensions.glVertexAttribPointer (position->attributeID, 3, GL_FLOAT, GL_FALSE, sizeof (Vertex), 0);
-        openGLContext.extensions.glEnableVertexAttribArray (position->attributeID);
-    }
-    
-    if (normal != nullptr)
-    {
-        openGLContext.extensions.glVertexAttribPointer (normal->attributeID, 3, GL_FLOAT, GL_FALSE, sizeof (Vertex), (GLvoid*) (sizeof (float) * 3));
-        openGLContext.extensions.glEnableVertexAttribArray (normal->attributeID);
-    }
-    
-    if (sourceColour != nullptr)
-    {
-        openGLContext.extensions.glVertexAttribPointer (sourceColour->attributeID, 4, GL_FLOAT, GL_FALSE, sizeof (Vertex), (GLvoid*) (sizeof (float) * 6));
-        openGLContext.extensions.glEnableVertexAttribArray (sourceColour->attributeID);
-    }
-}
-
-void Attributes::disable (OpenGLContext& openGLContext)
-{
-    if (position != nullptr)       openGLContext.extensions.glDisableVertexAttribArray (position->attributeID);
-    if (normal != nullptr)         openGLContext.extensions.glDisableVertexAttribArray (normal->attributeID);
-    if (sourceColour != nullptr)   openGLContext.extensions.glDisableVertexAttribArray (sourceColour->attributeID);
-}
-
-OpenGLShaderProgram::Attribute* Attributes::createAttribute
-(   OpenGLContext& openGLContext
-,   OpenGLShaderProgram& shader
-,   const char* attributeName
-)
-{
-    if (openGLContext.extensions.glGetAttribLocation (shader.programID, attributeName) < 0)
-        return nullptr;
-    
-    return new OpenGLShaderProgram::Attribute (shader, attributeName);
-}
-
-Uniforms::Uniforms (OpenGLContext& openGLContext, OpenGLShaderProgram& shader)
-:   projectionMatrix    (createUniform (openGLContext, shader, "projectionMatrix"))
-,   viewMatrix          (createUniform (openGLContext, shader, "viewMatrix"))
-,   lightPosition       (createUniform (openGLContext, shader, "lightPosition"))
-{
-    
-}
-    
-OpenGLShaderProgram::Uniform* Uniforms::createUniform
-(   OpenGLContext& openGLContext
-,   OpenGLShaderProgram& shader
-,   const char* uniformName
-)
-{
-    if (openGLContext.extensions.glGetUniformLocation (shader.programID, uniformName) < 0)
-        return nullptr;
-    
-    return new OpenGLShaderProgram::Uniform (shader, uniformName);
-}
-
-Display::Display():
-zoom (1.0)
+Display::Display()
+:   wireframe (false)
+,   zoom (1.0f)
 {
     setOpaque (true);
     
@@ -96,25 +26,23 @@ Display::~Display()
 
 void Display::newOpenGLContextCreated()
 {
-    loadShader();
+
 }
 
 void Display::openGLContextClosing()
 {
-    shape = nullptr;
-    shader = nullptr;
-    attributes = nullptr;
-    uniforms = nullptr;
+
 }
 
 void Display::renderOpenGL()
 {
-    OpenGLHelpers::clear (Colours::grey);
+    OpenGLHelpers::clear (Colours::black);
     
     glEnable (GL_DEPTH_TEST);
     glDepthFunc (GL_LESS);
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable (GL_LINE_SMOOTH);
     
     const float desktopScale = (float) openGLContext.getRenderingScale();
     glViewport
@@ -124,58 +52,147 @@ void Display::renderOpenGL()
     ,   roundToInt (desktopScale * getHeight())
     );
     
-    shader->use();
+    //    glPushMatrix();
     
-    if (OpenGLShaderProgram::Uniform* uni = uniforms->projectionMatrix)
+    glMatrixMode (GL_PROJECTION);
+    glLoadMatrixf (getProjectionMatrix().mat);
+    
+    glMatrixMode (GL_MODELVIEW);
+    glLoadMatrixf (getViewMatrix().mat);
+    
+    glLineWidth (2);
+    
+    if (wireframe)
     {
-        openGLContext.extensions.glUniformMatrix4fv
-        (   uni->uniformID
-        ,   1
-        ,   0
-        ,   getProjectionMatrix().mat
-        );
+        glColor3f (1, 1, 1);
+        glDisable (GL_LIGHTING);
+        glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+        glEnable (GL_LIGHTING);
+        glEnable (GL_LIGHT0);
+        glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+        glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
     }
     
-    if (OpenGLShaderProgram::Uniform* uni = uniforms->viewMatrix)
+    glBegin (GL_TRIANGLES);
+    for (auto i = scene.begin(); i != scene.end(); ++i)
     {
-        openGLContext.extensions.glUniformMatrix4fv
-        (   uni->uniformID
-        ,   1
-        ,   0
-        ,   getViewMatrix().mat
-        );
+        Vec normal = i->getNormal();
+        glNormal3d (normal.x, normal.y, normal.z);
+        
+        glVertex3d (i->v0.x, i->v0.y, i->v0.z);
+        glVertex3d (i->v1.x, i->v1.y, i->v1.z);
+        glVertex3d (i->v2.x, i->v2.y, i->v2.z);
     }
+    glEnd();
     
-    if (OpenGLShaderProgram::Uniform* uni = uniforms->lightPosition)
+    if (isEnabled())
     {
-        openGLContext.extensions.glUniform4f
-        (   uni->uniformID
-        ,   0.5f
-        ,   1.0f
-        ,   0.5f
-        ,   0.1f
-        );
+        micLock.enterRead();
+        drawOrb (Vec3f (micPosition.x,
+                        micPosition.y,
+                        micPosition.z), 5, 0, 1, 1);
+        micLock.exitRead();
+        
+        sourceLock.enterRead();
+        drawOrb (Vec3f (sourcePosition.x,
+                        sourcePosition.y,
+                        sourcePosition.z), 5, 1, 0, 0);
+        sourceLock.exitRead();
     }
-    
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-    
-    shape->draw (openGLContext, *attributes);
-    
-    openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
-    openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
+void Display::drawOrb (const Vec3f & position, const double size, const double r, const double g, const double b)
+{
+    glColor3d (r, g, b);
+    
+    glDisable (GL_LIGHTING);
+    glEnable (GL_DEPTH_TEST);
+
+    drawCircle (position, Vec3f (1, 0, 0), size * 0.9);
+    drawCircle (position, Vec3f (0, 1, 0), size * 0.9);
+    drawCircle (position, Vec3f (0, 0, 1), size * 0.9);
+    
+    glDisable(GL_DEPTH_TEST);
+    
+    Matrix3D<float> modelview = getViewMatrix();
+    Vec3f right (modelview.mat[0], modelview.mat[4], modelview.mat[8]);
+    Vec3f up (modelview.mat[1], modelview.mat[5], modelview.mat[9]);
+    
+    Vec3f c = (up.cross (right));
+    
+    drawCircle (position, c, size);
+    
+    glPushMatrix();
+    
+    glTranslated (position.x, position.y, position.z);
+    
+    glBegin (GL_LINES);
+    glColor3d(1, 0, 0);
+    glVertex3f(-size, 0, 0);
+    glVertex3f(size, 0, 0);
+    
+    glColor3d(0, 1, 0);
+    glVertex3f(0, -size, 0);
+    glVertex3f(0, size, 0);
+    
+    glColor3d(0, 0, 1);
+    glVertex3f(0, 0, -size);
+    glVertex3f(0, 0, size);
+    glEnd();
+    
+    glPopMatrix();
+}
+
+void Display::drawCircle (const Vec3f & p, const Vec3f & n, const double size)
+{
+    Vec3f t0 = (n.cross (Vec3f (0.2, 0, 0.5))).normalized();
+    Vec3f t1 = (t0.cross (n)).normalized();
+    
+    const int segments = 50;
+    const float angleIncrement = (2 * M_PI) / segments;
+    
+    glBegin (GL_LINE_LOOP);
+    for (int i = 0; i != segments; ++i)
+    {
+        Vec3f p0 = p + (t0 * size * sin (angleIncrement * i)) + (t1 * size * cos (angleIncrement * i));
+        
+        glVertex3f (p0.x, p0.y, p0.z);
+    }
+    glEnd();
+}
+
 
 Matrix3D<float> Display::getProjectionMatrix() const
 {
-    float w = 1.0f / (zoom + 0.1f);
-    float h = w * getLocalBounds().toFloat().getAspectRatio (false);
-    return Matrix3D<float>::fromFrustum (-w, w, -h, h, 5.0f, 20.0f);
+    float scale = zoom;
+    
+    float w = 0;
+    float h = 0;
+    float aspect = getLocalBounds().toFloat().getAspectRatio (false);
+    
+    if (aspect < 1)
+    {
+        h = 1.0f / (scale + 0.1f);
+        w = h / aspect;
+    }
+    else
+    {
+        w = 1.0f / (scale + 0.1f);
+        h = w * aspect;
+    }
+    
+    Matrix3D<float> ret = Matrix3D<float>::fromFrustum (-w, w, -h, h, radius * 0.1, -radius * 2);
+    return ret;
 }
 
 Matrix3D<float> Display::getViewMatrix() const
 {
-    Matrix3D<float> viewMatrix (Vector3D<float> (0.0f, 0.0f, -10.0f));
+    Matrix3D<float> viewMatrix (Vector3D<float> (0.0f, 0.0f, -radius - 1));
     viewMatrix *= draggableOrientation.getRotationMatrix();
+    viewMatrix *= Matrix3D<float>().rotated (Vector3D<float> (M_PI, 0, 0));
     return viewMatrix;
 }
 
@@ -186,75 +203,70 @@ void Display::resized()
     draggableOrientation.setViewport (getLocalBounds());
 }
 
-void Display::loadShader()
-{
-    ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
-    
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    
-    CFURLRef vertURL = CFBundleCopyResourceURL (mainBundle, CFSTR("vert"), CFSTR("glsl"), NULL);
-    CFURLRef fragURL = CFBundleCopyResourceURL (mainBundle, CFSTR("frag"), CFSTR("glsl"), NULL);
-    
-    String newVertexShader = File (CFStringGetCStringPtr (CFURLCopyFileSystemPath (vertURL, kCFURLPOSIXPathStyle),
-                                                          kCFStringEncodingMacRoman)).loadFileAsString();
-    String newFragmentShader = File (CFStringGetCStringPtr (CFURLCopyFileSystemPath (fragURL, kCFURLPOSIXPathStyle),
-                                                            kCFStringEncodingMacRoman)).loadFileAsString();
-    
-    if
-    (   newShader->addVertexShader      (newVertexShader)
-    &&  newShader->addFragmentShader    (newFragmentShader)
-    &&  newShader->link()
-    )
-    {
-        shape = nullptr;
-        attributes = nullptr;
-        uniforms = nullptr;
-        
-        shader = newShader;
-        shader->use();
-        
-        shape = new Shape();
-        attributes = new Attributes (openGLContext, *shader);
-        uniforms   = new Uniforms (openGLContext, *shader);
-    }
-    else
-    {
-        //  oh noes
-    }
-}
-
-void Display::loadObjFile( const File & file)
-{
-    objFile.load (file);
-    shape->loadObjFile(objFile, openGLContext);
-}
-
 void Display::mouseDown (const MouseEvent& e)
 {
-    draggableOrientation.mouseDown (e.getPosition());
+    if (isEnabled())
+        draggableOrientation.mouseDown (e.getPosition());
 }
 
 void Display::mouseDrag (const MouseEvent& e)
 {
-    draggableOrientation.mouseDrag (e.getPosition());
+    if (isEnabled())
+        draggableOrientation.mouseDrag (e.getPosition());
 }
 
 void Display::mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel)
 {
+    const float zoomMin = 0.001f;
+    const float zoomMax = 100.0f
+    ;
+    
     zoom += wheel.deltaY * 0.1;
+    
+    zoom = std::min (zoomMax, std::max (zoomMin, zoom));
 }
 
-void Display::setMicPosition (const Vector3D<float> mp)
+void Display::setMicPosition (const Vector3D<double> mp)
 {
     micLock.enterWrite();
     micPosition = mp;
     micLock.exitWrite();
 }
 
-void Display::setSourcePosition (const Vector3D<float> sp)
+void Display::setSourcePosition (const Vector3D<double> sp)
 {
     sourceLock.enterWrite();
     sourcePosition = sp;
     sourceLock.exitWrite();
 }
 
+void Display::setScene (const vector<Triangle> & s)
+{
+    sceneLock.enterWrite();
+    scene = s;
+    
+    double mag = 0;
+    
+    for (auto i = scene.begin(); i != scene.end(); ++i)
+    {
+        double dist0 = i->v0.length();
+        double dist1 = i->v1.length();
+        double dist2 = i->v2.length();
+        
+        mag = std::max (mag, std::max (dist0, std::max (dist1, dist2)));
+    }
+    
+    radius = mag;
+    
+    sceneLock.exitWrite();
+}
+
+void Display::setWireframe(bool b)
+{
+    wireframe = b;
+}
+
+bool Display::isWireframe() const
+{
+    return wireframe;
+}

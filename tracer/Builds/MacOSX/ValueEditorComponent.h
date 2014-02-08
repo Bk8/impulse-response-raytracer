@@ -176,6 +176,13 @@ public:
         noMaximum();
     }
     
+    void setEnabled (bool b)
+    {
+        textEditor->setEnabled (b);
+        addButton->setEnabled (b);
+        subButton->setEnabled (b);
+    }
+    
 private:
     ScopedPointer<TextEditor> textEditor;
     ScopedPointer<TextButton> addButton;

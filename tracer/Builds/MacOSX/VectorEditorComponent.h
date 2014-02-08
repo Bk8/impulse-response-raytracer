@@ -114,6 +114,13 @@ public:
         listener.remove(l);
     }
     
+    void setEnabled (bool b)
+    {
+        xEditor->setEnabled (b);
+        yEditor->setEnabled (b);
+        zEditor->setEnabled (b);
+    }
+    
 private:
     ScopedPointer<ValueEditor<T> > xEditor;
     ScopedPointer<ValueEditor<T> > yEditor;

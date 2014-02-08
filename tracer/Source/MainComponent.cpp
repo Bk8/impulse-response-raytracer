@@ -84,26 +84,31 @@ void MainContentComponent::getAllCommands (Array <CommandID>& commands)
     const CommandID ids[] =
     {   open
     ,   trace
+    ,   wireframe
     };
     
     commands.addArray (ids, numElementsInArray (ids));
 }
 
 void MainContentComponent::getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)
-{
-    const String generalCategory ("File");
-    
+{    
     switch (commandID)
     {
         case open:
-            result.setInfo ("Open...", "Open an object file to render", generalCategory, 0);
+            result.setInfo ("Open...", "Open an object file to render", "File", 0);
             result.addDefaultKeypress ('o', ModifierKeys::commandModifier);
             break;
             
         case trace:
-            result.setInfo ("Trace...", "Choose render options and trace", generalCategory, 0);
+            result.setInfo ("Trace...", "Choose render options and trace", "File", 0);
             result.addDefaultKeypress ('t', ModifierKeys::commandModifier);
             result.setActive (tracer->canTrace());
+            break;
+            
+        case wireframe:
+            result.setInfo ("Wireframe", "Use wireframe mode for rendering scene", "View", 0);
+            result.addDefaultKeypress ('w', ModifierKeys::commandModifier);
+            result.setTicked (tracer->isWireframe());
             break;
             
         default:
@@ -121,6 +126,10 @@ bool MainContentComponent::perform (const InvocationInfo& info)
             
         case trace:
             doTrace();
+            break;
+            
+        case wireframe:
+            tracer->setWireframe (! tracer->isWireframe());
             break;
             
         default:

@@ -42,6 +42,9 @@ public:
     
     void writeTrace (const File & f);
     
+    bool isWireframe() const;
+    void setWireframe (bool b);
+    
     void vectorEditorValueChanged (VectorEditor<double> * const ve);
     
 private:
@@ -75,6 +78,6 @@ private:
     ScopedPointer<Label> rayNumberLabel;
     ScopedPointer<Label> volumeThresholdLabel;
     
-    ScopedPointer<GroupComponent> materialSettingsGroup;
+//    ScopedPointer<GroupComponent> materialSettingsGroup;
 };
 #endif /* defined(__rayverb__Renderer__) */

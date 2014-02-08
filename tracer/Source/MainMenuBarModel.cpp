@@ -16,10 +16,14 @@ PopupMenu MainMenuBarModel::getMenuForIndex (int menuIndex, const String& menuNa
     
     PopupMenu menu;
     
-    if (menuIndex == 0)
+    if (menuName == "File")
     {
         menu.addCommandItem (commandManager, MainContentComponent::open);
         menu.addCommandItem (commandManager, MainContentComponent::trace);
+    }
+    if (menuName == "View")
+    {
+        menu.addCommandItem (commandManager, MainContentComponent::wireframe);
     }
     
     return menu;
@@ -32,7 +36,7 @@ void MainMenuBarModel::menuItemSelected (int menuItemID, int /*topLevelMenuIndex
 
 StringArray MainMenuBarModel::getMenuBarNames()
 {
-    const char* const names[] = { "File", nullptr };
+    const char* const names[] = { "File", "View", nullptr };
     
     return StringArray (names);
 }

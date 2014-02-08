@@ -69,6 +69,7 @@ public:
              const Vec & v1,
              const Vec & v2);
     
+    Vec             getNormal       ()                      const;
     Vec             findNormal      (const Vec & point)     const;
     Maybe<Real>     intersection    (const Ray & ray)       const;
     

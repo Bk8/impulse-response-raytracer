@@ -78,6 +78,10 @@ normal(Vec::cross(edge1, edge2).normalized()) {
     
 }
 
+Vec Triangle::getNormal() const {
+    return normal;
+}
+
 Vec Triangle::findNormal(const Vec &point) const {
     return normal;
 }

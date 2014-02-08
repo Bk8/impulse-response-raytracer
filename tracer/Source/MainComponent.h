@@ -28,6 +28,7 @@ public:
     enum CommandIDs
     {   open = 0x2000
     ,   trace
+    ,   wireframe
     };
     
 private:
