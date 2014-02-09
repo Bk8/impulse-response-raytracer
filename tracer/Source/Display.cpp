@@ -74,11 +74,46 @@ void Display::renderOpenGL()
         glEnable (GL_LIGHT0);
         glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
         glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+        float spec[] = {1.0f, 1.0f, 1.0f, 1.0f};
+        glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
     }
     
     glBegin (GL_TRIANGLES);
     for (auto i = scene.begin(); i != scene.end(); ++i)
     {
+        if (! wireframe)
+        {
+            float diffuse[] =
+            {
+                static_cast<float>(i->material[0].diffuse),
+                static_cast<float>(i->material[1].diffuse),
+                static_cast<float>(i->material[2].diffuse),
+                1.0
+            };
+            glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, diffuse);
+
+            float specular[] =
+            {
+                static_cast<float>(i->material[0].specular),
+                static_cast<float>(i->material[1].specular),
+                static_cast<float>(i->material[2].specular),
+                1.0
+            };
+            glMaterialfv (GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+            
+//            glColorMaterial (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+//            glColor3f (static_cast<float>(i->material[0].diffuse),
+//                       static_cast<float>(i->material[1].diffuse),
+//                       static_cast<float>(i->material[2].diffuse));
+
+//            glColorMaterial (GL_FRONT_AND_BACK, GL_SPECULAR);
+//            glColor3f (static_cast<float>(i->material[0].specular),
+//                       static_cast<float>(i->material[1].specular),
+//                       static_cast<float>(i->material[2].specular));
+
+            glMateriali (GL_FRONT_AND_BACK, GL_SHININESS, 100);
+        }
+        
         Vec normal = i->getNormal();
         glNormal3d (normal.x, normal.y, normal.z);
         
@@ -90,16 +125,18 @@ void Display::renderOpenGL()
     
     if (isEnabled())
     {
+        const double s = radius * 0.1;
+        
         micLock.enterRead();
         drawOrb (Vec3f (micPosition.x,
                         micPosition.y,
-                        micPosition.z), 5, 0, 1, 1);
+                        micPosition.z), s, 0, 1, 1);
         micLock.exitRead();
         
         sourceLock.enterRead();
         drawOrb (Vec3f (sourcePosition.x,
                         sourcePosition.y,
-                        sourcePosition.z), 5, 1, 0, 0);
+                        sourcePosition.z), s, 1, 0, 0);
         sourceLock.exitRead();
     }
 }
@@ -157,7 +194,7 @@ void Display::drawCircle (const Vec3f & p, const Vec3f & n, const double size)
     glBegin (GL_LINE_LOOP);
     for (int i = 0; i != segments; ++i)
     {
-        Vec3f p0 = p + (t0 * size * sin (angleIncrement * i)) + (t1 * size * cos (angleIncrement * i));
+        Vec3f p0 = p + ((t0 * sin (angleIncrement * i)) + (t1 * cos (angleIncrement * i))).normalized() * size;
         
         glVertex3f (p0.x, p0.y, p0.z);
     }

@@ -89,18 +89,13 @@ void Tracer::loadObjFile (const juce::File &f)
     {
         clearPrimitives();
         
-        const Rayverb::Surface PLANE_SURFACE =
-        {
-            Material (0.9, 0.9),
-            Material (0.8, 0.8),
-            Material (0.7, 0.7)
-        };
-        
         vector<Triangle> trivec;
         
         for (unsigned int i = 0; i != pScene->mNumMeshes; ++i)
         {
             const aiMesh * thisMesh = pScene->mMeshes[i];
+            
+            const aiMaterial * thisMaterial = pScene->mMaterials[thisMesh->mMaterialIndex];
             
             for (unsigned int j = 0; j != thisMesh->mNumFaces; ++j)
             {
@@ -112,15 +107,25 @@ void Tracer::loadObjFile (const juce::File &f)
                     const aiVector3D * p1 = &thisMesh->mVertices[thisFace->mIndices[1]];
                     const aiVector3D * p2 = &thisMesh->mVertices[thisFace->mIndices[2]];
                     
-                    trivec.push_back
-                    (   Triangle
-                        (   PLANE_SURFACE
-                        ,   false
-                        ,   Vec (p0->x, p0->y, p0->z)
-                        ,   Vec (p1->x, p1->y, p1->z)
-                        ,   Vec (p2->x, p2->y, p2->z)
-                        )
+                    aiColor3D diffuse (0.0f, 0.0f, 0.0f);
+                    thisMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
+                    
+                    aiColor3D specular (0.0f, 0.0f, 0.0f);
+                    thisMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specular);
+                    
+                    Triangle t
+                    (   {   Material (diffuse.r, specular.r)
+                        ,   Material (diffuse.g, specular.g)
+                        ,   Material (diffuse.b, specular.b)
+                    }
+                    ,   false
+                    ,   Vec (p0->x, p0->y, p0->z)
+                    ,   Vec (p1->x, p1->y, p1->z)
+                    ,   Vec (p2->x, p2->y, p2->z)
                     );
+                    
+                    trivec.push_back (t);
+                    primitive.push_back (new Triangle (t));
                 }
                 else
                 {
