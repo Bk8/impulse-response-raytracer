@@ -11,4 +11,4 @@ I've also added Assimp as a submodule, but this is more for convenience when dow
 
 Maybe if I'm feeling brave I'll convert the entire build system over to CMake at some point.
 
-For the moment, attempting to build this is only for the brave.
+For the moment, attempting to build this is not for the faint of heart, or those with lots of important things to do.
