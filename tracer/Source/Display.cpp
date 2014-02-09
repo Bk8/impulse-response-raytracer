@@ -166,21 +166,19 @@ void Display::drawCircle (const Vec3f & p, const Vec3f & n, const double size)
 
 
 Matrix3D<float> Display::getProjectionMatrix() const
-{
-    float scale = zoom;
-    
+{    
     float w = 0;
     float h = 0;
     float aspect = getLocalBounds().toFloat().getAspectRatio (false);
     
     if (aspect < 1)
     {
-        h = 1.0f / (scale + 0.1f);
+        h = 1.0f / (zoom + 0.1f);
         w = h / aspect;
     }
     else
     {
-        w = 1.0f / (scale + 0.1f);
+        w = 1.0f / (zoom + 0.1f);
         h = w * aspect;
     }
     
@@ -215,16 +213,84 @@ void Display::mouseDrag (const MouseEvent& e)
         draggableOrientation.mouseDrag (e.getPosition());
 }
 
+double determinant (const Matrix3D<float> & m) {
+    double value =
+    m.mat[3] *m.mat[6] *m.mat[9] *m.mat[12] - m.mat[2] *m.mat[7] *m.mat[9] *m.mat[12] - m.mat[3] *m.mat[5] *m.mat[10]*m.mat[12] + m.mat[1] *m.mat[7] *m.mat[10]*m.mat[12]+
+    m.mat[2] *m.mat[5] *m.mat[11]*m.mat[12] - m.mat[1] *m.mat[6] *m.mat[11]*m.mat[12] - m.mat[3] *m.mat[6] *m.mat[8] *m.mat[13] + m.mat[2] *m.mat[7] *m.mat[8] *m.mat[13]+
+    m.mat[3] *m.mat[4] *m.mat[10]*m.mat[13] - m.mat[0] *m.mat[7] *m.mat[10]*m.mat[13] - m.mat[2] *m.mat[4] *m.mat[11]*m.mat[13] + m.mat[0] *m.mat[6] *m.mat[11]*m.mat[13]+
+    m.mat[3] *m.mat[5] *m.mat[8] *m.mat[14] - m.mat[1] *m.mat[7] *m.mat[8] *m.mat[14] - m.mat[3] *m.mat[4] *m.mat[9] *m.mat[14] + m.mat[0] *m.mat[7] *m.mat[9] *m.mat[14]+
+    m.mat[1] *m.mat[4] *m.mat[11]*m.mat[14] - m.mat[0] *m.mat[5] *m.mat[11]*m.mat[14] - m.mat[2] *m.mat[5] *m.mat[8] *m.mat[15] + m.mat[1] *m.mat[6] *m.mat[8] *m.mat[15]+
+    m.mat[2] *m.mat[4] *m.mat[9] *m.mat[15] - m.mat[0] *m.mat[6] *m.mat[9] *m.mat[15] - m.mat[1] *m.mat[4] *m.mat[10]*m.mat[15] + m.mat[0] *m.mat[5] *m.mat[10]*m.mat[15];
+    return value;
+}
+
+Matrix3D<float> invert (const Matrix3D<float> & m) {
+    Matrix3D<float> ret;
+    ret.mat[0]  = m.mat[6] *m.mat[11]*m.mat[13] - m.mat[7] *m.mat[10]*m.mat[13] + m.mat[7] *m.mat[9] *m.mat[14] - m.mat[5] *m.mat[11]*m.mat[14] - m.mat[6] *m.mat[9] *m.mat[15] + m.mat[5] *m.mat[10]*m.mat[15];
+    ret.mat[1]  = m.mat[3] *m.mat[10]*m.mat[13] - m.mat[2] *m.mat[11]*m.mat[13] - m.mat[3] *m.mat[9] *m.mat[14] + m.mat[1] *m.mat[11]*m.mat[14] + m.mat[2] *m.mat[9] *m.mat[15] - m.mat[1] *m.mat[10]*m.mat[15];
+    ret.mat[2]  = m.mat[2] *m.mat[7] *m.mat[13] - m.mat[3] *m.mat[6] *m.mat[13] + m.mat[3] *m.mat[5] *m.mat[14] - m.mat[1] *m.mat[7] *m.mat[14] - m.mat[2] *m.mat[5] *m.mat[15] + m.mat[1] *m.mat[6] *m.mat[15];
+    ret.mat[3]  = m.mat[3] *m.mat[6] *m.mat[9]  - m.mat[2] *m.mat[7] *m.mat[9]  - m.mat[3] *m.mat[5] *m.mat[10] + m.mat[1] *m.mat[7] *m.mat[10] + m.mat[2] *m.mat[5] *m.mat[11] - m.mat[1] *m.mat[6] *m.mat[11];
+    ret.mat[4]  = m.mat[7] *m.mat[10]*m.mat[12] - m.mat[6] *m.mat[11]*m.mat[12] - m.mat[7] *m.mat[8] *m.mat[14] + m.mat[4] *m.mat[11]*m.mat[14] + m.mat[6] *m.mat[8] *m.mat[15] - m.mat[4] *m.mat[10]*m.mat[15];
+    ret.mat[5]  = m.mat[2] *m.mat[11]*m.mat[12] - m.mat[3] *m.mat[10]*m.mat[12] + m.mat[3] *m.mat[8] *m.mat[14] - m.mat[0] *m.mat[11]*m.mat[14] - m.mat[2] *m.mat[8] *m.mat[15] + m.mat[0] *m.mat[10]*m.mat[15];
+    ret.mat[6]  = m.mat[3] *m.mat[6] *m.mat[12] - m.mat[2] *m.mat[7] *m.mat[12] - m.mat[3] *m.mat[4] *m.mat[14] + m.mat[0] *m.mat[7] *m.mat[14] + m.mat[2] *m.mat[4] *m.mat[15] - m.mat[0] *m.mat[6] *m.mat[15];
+    ret.mat[7]  = m.mat[2] *m.mat[7] *m.mat[8]  - m.mat[3] *m.mat[6] *m.mat[8]  + m.mat[3] *m.mat[4] *m.mat[10] - m.mat[0] *m.mat[7] *m.mat[10] - m.mat[2] *m.mat[4] *m.mat[11] + m.mat[0] *m.mat[6] *m.mat[11];
+    ret.mat[8]  = m.mat[5] *m.mat[11]*m.mat[12] - m.mat[7] *m.mat[9] *m.mat[12] + m.mat[7] *m.mat[8] *m.mat[13] - m.mat[4] *m.mat[11]*m.mat[13] - m.mat[5] *m.mat[8] *m.mat[15] + m.mat[4] *m.mat[9] *m.mat[15];
+    ret.mat[9]  = m.mat[3] *m.mat[9] *m.mat[12] - m.mat[1] *m.mat[11]*m.mat[12] - m.mat[3] *m.mat[8] *m.mat[13] + m.mat[0] *m.mat[11]*m.mat[13] + m.mat[1] *m.mat[8] *m.mat[15] - m.mat[0] *m.mat[9] *m.mat[15];
+    ret.mat[10] = m.mat[1] *m.mat[7] *m.mat[12] - m.mat[3] *m.mat[5] *m.mat[12] + m.mat[3] *m.mat[4] *m.mat[13] - m.mat[0] *m.mat[7] *m.mat[13] - m.mat[1] *m.mat[4] *m.mat[15] + m.mat[0] *m.mat[5] *m.mat[15];
+    ret.mat[11] = m.mat[3] *m.mat[5] *m.mat[8]  - m.mat[1] *m.mat[7] *m.mat[8]  - m.mat[3] *m.mat[4] *m.mat[9]  + m.mat[0] *m.mat[7] *m.mat[9]  + m.mat[1] *m.mat[4] *m.mat[11] - m.mat[0] *m.mat[5] *m.mat[11];
+    ret.mat[12] = m.mat[6] *m.mat[9] *m.mat[12] - m.mat[5] *m.mat[10]*m.mat[12] - m.mat[6] *m.mat[8] *m.mat[13] + m.mat[4] *m.mat[10]*m.mat[13] + m.mat[5] *m.mat[8] *m.mat[14] - m.mat[4] *m.mat[9] *m.mat[14];
+    ret.mat[13] = m.mat[1] *m.mat[10]*m.mat[12] - m.mat[2] *m.mat[9] *m.mat[12] + m.mat[2] *m.mat[8] *m.mat[13] - m.mat[0] *m.mat[10]*m.mat[13] - m.mat[1] *m.mat[8] *m.mat[14] + m.mat[0] *m.mat[9] *m.mat[14];
+    ret.mat[14] = m.mat[2] *m.mat[5] *m.mat[12] - m.mat[1] *m.mat[6] *m.mat[12] - m.mat[2] *m.mat[4] *m.mat[13] + m.mat[0] *m.mat[6] *m.mat[13] + m.mat[1] *m.mat[4] *m.mat[14] - m.mat[0] *m.mat[5] *m.mat[14];
+    ret.mat[15] = m.mat[1] *m.mat[6] *m.mat[8]  - m.mat[2] *m.mat[5] *m.mat[8]  + m.mat[2] *m.mat[4] *m.mat[9]  - m.mat[0] *m.mat[6] *m.mat[9]  - m.mat[1] *m.mat[4] *m.mat[10] + m.mat[0] *m.mat[5] *m.mat[10];
+    
+    double scale = 1 / determinant (m);
+    
+    for (int i = 0; i != 16; ++i)
+    {
+        ret.mat[i] *= scale;
+    }
+    
+    return ret;
+}
+
+Vector3D<float> mult (const Matrix3D<float> & m, const Vector3D<float> & v, const double w)
+{
+    return Vector3D<float>
+    (   m.mat[0]  * v.x + m.mat[1]  * v.y + m.mat[2]  * v.z + m.mat[3]  * w
+    ,   m.mat[4]  * v.x + m.mat[5]  * v.y + m.mat[6]  * v.z + m.mat[7]  * w
+    ,   m.mat[8]  * v.x + m.mat[9]  * v.y + m.mat[10] * v.z + m.mat[11] * w
+    );
+}
+
+//void Display::mouseMove (const MouseEvent& e)
+//{
+//    generateRay (e.x, e.y);
+//}
+
 void Display::mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel)
 {
     const float zoomMin = 0.001f;
-    const float zoomMax = 100.0f
-    ;
+    const float zoomMax = 100.0f;
     
     zoom += wheel.deltaY * 0.1;
     
     zoom = std::min (zoomMax, std::max (zoomMin, zoom));
 }
+
+//Ray Display::generateRay (const double xpos, const double ypos)
+//{
+//    double x = ((xpos * 2.0) / getWidth()) - 1;
+//    double y = 1 - ((ypos * 2.0) / getHeight());
+//    
+//    Vector3D<float> rayClip (x, y, -1);
+//    
+//    Vector3D<float> rayEye = mult (invert (getProjectionMatrix()), rayClip, 1);
+//    rayEye.z = -1;
+//    
+//    Vector3D<float> rayWor = mult (invert (getViewMatrix()), rayEye, 0);
+//    
+//    rayWor = rayWor.normalised();
+//}
 
 void Display::setMicPosition (const Vector3D<double> mp)
 {

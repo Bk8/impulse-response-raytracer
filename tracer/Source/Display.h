@@ -30,6 +30,7 @@ public:
     
     void mouseDown (const MouseEvent& e);
     void mouseDrag (const MouseEvent& e);
+//    void mouseMove (const MouseEvent& e);
     void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel);
     
     void setMicPosition (const Vector3D<double> mp);
@@ -39,6 +40,8 @@ public:
     
     bool isWireframe() const;
     void setWireframe (bool b);
+    
+//    Ray generateRay (const double xpos, const double ypos);
     
     void drawOrb (const Vec3f & position, const double size, const double r, const double g, const double b);
     void drawCircle (const Vec3f & position, const Vec3f & normal, const double size);

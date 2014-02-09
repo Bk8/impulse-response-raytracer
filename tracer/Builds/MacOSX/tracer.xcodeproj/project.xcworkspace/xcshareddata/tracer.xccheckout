@@ -12,6 +12,8 @@
 	<dict>
 		<key>20CD0247-77E5-44F9-8A0D-C4792E11BE81</key>
 		<string>https://github.com/reuk/impulse-response-raytracer.git</string>
+		<key>7CBCF7BE-0B6F-439F-9831-3DF2E53A8972</key>
+		<string>git://github.com/assimp/assimp.git</string>
 		<key>C65CC415-9EAB-476F-88E1-4B7988E2E5C0</key>
 		<string>git://github.com/julianstorer/JUCE.git</string>
 	</dict>
@@ -21,6 +23,8 @@
 	<dict>
 		<key>20CD0247-77E5-44F9-8A0D-C4792E11BE81</key>
 		<string>../../../../..</string>
+		<key>7CBCF7BE-0B6F-439F-9831-3DF2E53A8972</key>
+		<string>../../../../../externals/assimp</string>
 		<key>C65CC415-9EAB-476F-88E1-4B7988E2E5C0</key>
 		<string>../../../../../../JUCE</string>
 	</dict>
@@ -32,6 +36,14 @@
 	<string>20CD0247-77E5-44F9-8A0D-C4792E11BE81</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7CBCF7BE-0B6F-439F-9831-3DF2E53A8972</string>
+			<key>IDESourceControlWCCName</key>
+			<string>assimp</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>

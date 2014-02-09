@@ -18,6 +18,7 @@
 		1B5A7448189C4C92006AA760 /* ThreadWithCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5A7447189C4C92006AA760 /* ThreadWithCallbacks.cpp */; };
 		1B814E68189E9F65001B4790 /* VectorEditorComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B814E66189E9F65001B4790 /* VectorEditorComponent.cpp */; };
 		1B814E6B189EA04B001B4790 /* ValueEditorComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B814E69189EA04B001B4790 /* ValueEditorComponent.cpp */; };
+		1BAB424818A7E1C400270374 /* libassimp.3.0.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BAB424718A7E1C400270374 /* libassimp.3.0.1.dylib */; };
 		1C2C7B9C06B59ABCD5F19FC8 /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 025183A0E422D2BE2FB089C6 /* MainComponent.cpp */; };
 		2C8F1DF6E5C547F81EE9C03E /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8107D6164352930F0114D56B /* Accelerate.framework */; };
 		3BBEA132DF88F16F71B99533 /* juce_gui_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = F59FF91EFC5A5FE4E5FCEB6F /* juce_gui_basics.mm */; };
@@ -176,6 +177,7 @@
 		1B814E67189E9F65001B4790 /* VectorEditorComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VectorEditorComponent.h; sourceTree = "<group>"; };
 		1B814E69189EA04B001B4790 /* ValueEditorComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ValueEditorComponent.cpp; sourceTree = "<group>"; };
 		1B814E6A189EA04B001B4790 /* ValueEditorComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ValueEditorComponent.h; sourceTree = "<group>"; };
+		1BAB424718A7E1C400270374 /* libassimp.3.0.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.3.0.1.dylib; path = ../../../externals/assimp/build/code/libassimp.3.0.1.dylib; sourceTree = "<group>"; };
 		1BACAF39D77DD50DCFA37ED1 /* juce_TextLayout.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_TextLayout.cpp; path = ../../../../JUCE/modules/juce_graphics/fonts/juce_TextLayout.cpp; sourceTree = SOURCE_ROOT; };
 		1BD30F4BF7DDB3704B183BBD /* juce_TopLevelWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_TopLevelWindow.h; path = ../../../../JUCE/modules/juce_gui_basics/windows/juce_TopLevelWindow.h; sourceTree = SOURCE_ROOT; };
 		1C4864AC72A578B67ADD841C /* juce_android_Audio.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_android_Audio.cpp; path = ../../../../JUCE/modules/juce_audio_devices/native/juce_android_Audio.cpp; sourceTree = SOURCE_ROOT; };
@@ -953,6 +955,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1BAB424818A7E1C400270374 /* libassimp.3.0.1.dylib in Frameworks */,
 				1B5A742F189C4C60006AA760 /* libverb.a in Frameworks */,
 				2C8F1DF6E5C547F81EE9C03E /* Accelerate.framework in Frameworks */,
 				D6D0093ADD9DCE74C0E3AE18 /* AudioToolbox.framework in Frameworks */,
@@ -2234,6 +2237,7 @@
 		A5666C7A883AAF6BCDAEB375 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1BAB424718A7E1C400270374 /* libassimp.3.0.1.dylib */,
 				8107D6164352930F0114D56B /* Accelerate.framework */,
 				927D9EC34626EC5C29AA5FE5 /* AudioToolbox.framework */,
 				1DF45E7CC61598F61389438F /* Carbon.framework */,
@@ -2809,6 +2813,10 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/reuben/Documents/xcode/RAYVERB_PROJECT/externals/assimp/build/code,
+				);
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = tracer;
@@ -2831,7 +2839,7 @@
 				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PRODUCT_NAME = rayverb;
-				USER_HEADER_SEARCH_PATHS = "../../../include ../../../librayverb";
+				USER_HEADER_SEARCH_PATHS = "../../../include ../../../librayverb ../../../externals/assimp/include";
 				WARNING_CFLAGS = "-Wreorder";
 				ZERO_LINK = NO;
 			};
@@ -2852,7 +2860,7 @@
 				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PRODUCT_NAME = rayverb;
-				USER_HEADER_SEARCH_PATHS = "../../../include ../../../librayverb";
+				USER_HEADER_SEARCH_PATHS = "../../../include ../../../librayverb ../../../externals/assimp/include";
 				WARNING_CFLAGS = "-Wreorder";
 				ZERO_LINK = NO;
 			};
@@ -2884,6 +2892,10 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Users/reuben/Documents/xcode/RAYVERB_PROJECT/externals/assimp/build/code,
+				);
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
 				PRODUCT_NAME = tracer;
 				SDKROOT_ppc = macosx10.5;

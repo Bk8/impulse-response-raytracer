@@ -10,6 +10,10 @@
 #include "Adapters.h"
 #include "MainComponent.h"
 
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+
 Tracer::Tracer()
 {
     addChildComponent (progressBar = new ProgressBar (progress));
@@ -74,7 +78,14 @@ Tracer::~Tracer()
 
 void Tracer::loadObjFile (const juce::File &f)
 {
-    if (objFile.load (f).wasOk())
+    Assimp::Importer importer;
+    
+    const aiScene* pScene = importer.ReadFile(f.getFullPathName().toStdString().c_str(),
+                                              aiProcess_Triangulate |
+                                              aiProcess_GenSmoothNormals |
+                                              aiProcess_FlipUVs);
+    
+    if (pScene)
     {
         clearPrimitives();
         
@@ -87,34 +98,39 @@ void Tracer::loadObjFile (const juce::File &f)
         
         vector<Triangle> trivec;
         
-        for (int i = 0; i < objFile.shapes.size(); ++i)
+        for (unsigned int i = 0; i != pScene->mNumMeshes; ++i)
         {
-            WavefrontObjFile::Shape * thisShape = objFile.shapes.getUnchecked (i);
-            WavefrontObjFile::Mesh thisMesh = thisShape->mesh;
+            const aiMesh * thisMesh = pScene->mMeshes[i];
             
-            for (int j = 0; j < objFile.shapes.getUnchecked (i)->mesh.indices.size(); j += 3)
+            for (unsigned int j = 0; j != thisMesh->mNumFaces; ++j)
             {
-                WavefrontObjFile::Index i0 = thisMesh.indices.getUnchecked (j + 0);
-                WavefrontObjFile::Index i1 = thisMesh.indices.getUnchecked (j + 1);
-                WavefrontObjFile::Index i2 = thisMesh.indices.getUnchecked (j + 2);
+                const aiFace * thisFace = &thisMesh->mFaces[j];
                 
-                WavefrontObjFile::Vertex v0 = thisMesh.vertices.getUnchecked (i0);
-                WavefrontObjFile::Vertex v1 = thisMesh.vertices.getUnchecked (i1);
-                WavefrontObjFile::Vertex v2 = thisMesh.vertices.getUnchecked (i2);
-
-                Triangle t (PLANE_SURFACE, false,
-                            Vec (v0.x, v0.y, v0.z),
-                            Vec (v1.x, v1.y, v1.z),
-                            Vec (v2.x, v2.y, v2.z));
-                primitive.push_back (new Triangle (t));
-                
-                trivec.push_back (t);
+                if (thisFace->mNumIndices == 3)
+                {
+                    const aiVector3D * p0 = &thisMesh->mVertices[thisFace->mIndices[0]];
+                    const aiVector3D * p1 = &thisMesh->mVertices[thisFace->mIndices[1]];
+                    const aiVector3D * p2 = &thisMesh->mVertices[thisFace->mIndices[2]];
+                    
+                    trivec.push_back
+                    (   Triangle
+                        (   PLANE_SURFACE
+                        ,   false
+                        ,   Vec (p0->x, p0->y, p0->z)
+                        ,   Vec (p1->x, p1->y, p1->z)
+                        ,   Vec (p2->x, p2->y, p2->z)
+                        )
+                    );
+                }
+                else
+                {
+                    std::cerr << "oh dear - this face isn't a triangle" << std::endl;
+                }
             }
         }
         
         traceButton->setEnabled (canTrace());
         
-        //    display->loadObjFile (f);
         display->setScene (trivec);
         
         micPositionEditor->setEnabled (true);
@@ -122,6 +138,10 @@ void Tracer::loadObjFile (const juce::File &f)
         rayNumberEditor->setEnabled (true);
         volumeThresholdEditor->setEnabled (true);
         display->setEnabled (true);
+    }
+    else
+    {
+        std::cerr << "Error parsing '" << f.getFullPathName().toStdString() <<"': '" << importer.GetErrorString() << "'" << std::endl;
     }
 }
 
